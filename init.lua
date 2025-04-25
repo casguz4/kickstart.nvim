@@ -396,6 +396,9 @@ require('lazy').setup({
       -- Allows extra capabilities provided by blink.cmp
       'saghen/blink.cmp',
     },
+    opts = {
+      inlay_hints = { enabled = true },
+    },
     config = function()
       -- Brief aside: **What is LSP?**
       --
@@ -576,18 +579,15 @@ require('lazy').setup({
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
       local servers = {
         -- clangd = {},
-        -- gopls = {},
+        gopls = {},
         -- pyright = {},
-        -- rust_analyzer = {},
+        rust_analyzer = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
         -- Some languages (like typescript) have entire language plugins that can be useful:
         --    https://github.com/pmizio/typescript-tools.nvim
-        --
         -- But for many setups, the LSP (`ts_ls`) will work just fine
-        -- ts_ls = {},
-        --
-
+        ts_ls = {},
         lua_ls = {
           -- cmd = { ... },
           -- filetypes = { ... },
@@ -599,6 +599,24 @@ require('lazy').setup({
               },
               -- You can toggle below to ignore Lua_LS's noisy `missing-fields` warnings
               -- diagnostics = { disable = { 'missing-fields' } },
+            },
+          },
+        },
+        emmet_ls = {
+          filetypes = { 'html', 'typescriptreact', 'typescript.tsx', 'javascriptreact', 'javascript.jsx', '.cshtml', 'php' },
+          init_options = {
+            html = {
+              options = {
+                ['bem.enabled'] = true,
+                ['jsx.enabled'] = true,
+                ['html.format.enable'] = true,
+                ['html.format.indentInnerHtml'] = true,
+                ['html.format.preserveNewLines'] = true,
+                ['html.format.maxPreserveNewLines'] = 2,
+                ['html.format.wrapLineLength'] = 120,
+                ['html.format.unformatted'] = 'code,pre,script',
+                ['html.format.contentUnformatted'] = 'code,pre,script',
+              },
             },
           },
         },
@@ -621,6 +639,7 @@ require('lazy').setup({
       vim.list_extend(ensure_installed, {
         'stylua', -- Used to format Lua code
       })
+      vim.lsp.buf.format { async = true }
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
       require('mason-lspconfig').setup {
@@ -633,6 +652,8 @@ require('lazy').setup({
             -- by the server configuration above. Useful when disabling
             -- certain features of an LSP (for example, turning off formatting for ts_ls)
             server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
+            -- Not sure what to do here? feels like vim.lsp.enable() is not doing much of anything because of lspconfig but IDK
+            vim.lsp.enable(server)
             require('lspconfig')[server_name].setup(server)
           end,
         },
@@ -646,7 +667,7 @@ require('lazy').setup({
     cmd = { 'ConformInfo' },
     keys = {
       {
-        '<leader>f',
+        '<leader>ff',
         function()
           require('conform').format { async = true, lsp_format = 'fallback' }
         end,
@@ -861,10 +882,6 @@ require('lazy').setup({
   require 'kickstart.plugins.neo-tree',
   require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
 
-  -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
-  --    This is the easiest way to modularize your config.
-  --
-  --  Uncomment the following line and add your plugins to `lua/custom/plugins/*.lua` to get going.
   { import = 'custom.plugins' },
   --
   -- For additional information with loading, sourcing and examples see `:help lazy.nvim-🔌-plugin-spec`
