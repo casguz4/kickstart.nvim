@@ -123,7 +123,8 @@ return {
       'ts_ls',
       'gopls',
       'rust_analyzer',
-      -- 'tsgo', -- uncomment if u want to use tsgo
+      'tsgo', -- uncomment if u want to use tsgo
+      'bashls',
     }
 
     vim.lsp.buf.format { async = true }

@@ -4,6 +4,12 @@
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
+-- Set default Folding
+vim.o.foldcolumn = '1'
+vim.o.foldlevel = 99
+vim.o.foldlevelstart = 99
+vim.o.foldenable = true
+
 -- Set to true if you have a Nerd Font installed and selected in the terminal
 vim.g.have_nerd_font = true
 
@@ -79,7 +85,11 @@ vim.opt.confirm = true
 -- Clear highlights on search when pressing <Esc> in normal mode
 --  See `:help hlsearch`
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
-vim.keymap.set('n', '<leader>w', '<cmd>w<CR>')
+-- File I/O
+vim.keymap.set('n', '<leader>w', '<cmd>w<CR>', { desc = 'Save file' })
+vim.keymap.set('n', '<leader>W', '<cmd>wa<CR>', { desc = 'Save all files' })
+vim.keymap.set('n', '<leader>Q', '<cmd>qa<CR>', { desc = 'Quit all files' })
+vim.keymap.set('n', '<leader>S', '<cmd>qa<CR>', { desc = 'Save & Quit all files' })
 
 -- Diagnostic keymaps
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
