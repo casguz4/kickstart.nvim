@@ -120,10 +120,9 @@ return {
 
     vim.lsp.enable {
       'lua_ls',
-      'ts_ls',
       'gopls',
       'rust_analyzer',
-      'tsgo', -- uncomment if u want to use tsgo
+       os.getenv 'TSGOPATH' and 'tsgo' or 'ts_ls',
       'bashls',
     }
 
