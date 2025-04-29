@@ -6,7 +6,7 @@ return {
       vim.g.copilot_no_tab_map = true
       vim.api.nvim_set_keymap('i', '<C-J>', 'copilot#Accept("<CR>")', { silent = true, expr = true })
 
-      -- Enable Copilot
+      -- Enable Copilot; this is optional and i prefer to turn it on when needed which has shown to be **very rare**
       -- vim.cmd 'Copilot enable'
     end,
   },
@@ -19,6 +19,9 @@ return {
     build = 'make tiktoken', -- Only on MacOS or Linux
     opts = {
       -- See Configuration section for options
+      sticky = {
+        "#buffer:`current`",
+      },
     },
   },
 }
