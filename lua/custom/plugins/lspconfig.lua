@@ -1,3 +1,27 @@
+-- insired by @stephansama github.com/stephansama/nvim/lua/plugins/editor/mason.lua
+local MASON_ENSURED = {
+  'bash-language-server',
+  'csharp-language-server',
+  'css-lsp',
+  'dockerfile-language-server',
+  'emmet-ls',
+  'eslint-lsp',
+  'gopls',
+  'lua-language-server',
+  'marksman',
+  'rust-analyzer',
+  'typescript-language-server',
+}
+local MasonInstallAll = function()
+  if MASON_ENSURED and #MASON_ENSURED > 0 then
+    vim.cmd('MasonInstall ' .. table.concat(MASON_ENSURED, ' '))
+  end
+
+  vim.api.nvim_create_user_command("MasonInstallAll", MasonInstallAll, {
+    desc = "Install all LSP servers",
+  })
+end
+
 return {
   -- Main LSP Configuration
   'neovim/nvim-lspconfig',
@@ -24,8 +48,21 @@ return {
     -- Automatically install LSPs and related tools to stdpath for Neovim
     -- Mason must be loaded before its dependents so we need to set it up here.
     -- NOTE: `opts = {}` is the same as calling `require('mason').setup({})`
-    { 'williamboman/mason.nvim', opts = {} },
-    'williamboman/mason-lspconfig.nvim',
+    {
+      'williamboman/mason.nvim',
+      opts = {
+        PATH = 'prepend',
+        registries = { 'github:mason-org/mason-registry' },
+        ensure_installed = MASON_ENSURED,
+        ui = {
+          border = 'rounded',
+        }
+      },
+      config = function(_, opts)
+        require('mason').setup(opts)
+        vim.api.nvim_create_user_command("MasonInstallAll", MasonInstallAll, {})
+      end
+    },
     'WhoIsSethDaniel/mason-tool-installer.nvim',
 
     -- Useful status updates for LSP.
@@ -122,7 +159,7 @@ return {
       'lua_ls',
       'gopls',
       'rust_analyzer',
-       os.getenv 'TSGOPATH' and 'tsgo' or 'ts_ls',
+      os.getenv 'TSGOPATH' and 'tsgo' or 'ts_ls',
       'bashls',
     }
 
