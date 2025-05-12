@@ -7,9 +7,11 @@ local MASON_ENSURED = {
   'emmet-ls',
   'eslint-lsp',
   'gopls',
-  'lua-language-server',
+  'html-lsp',
+  'markdownlint',
   'marksman',
-  'rust-analyzer',
+  'prettier',
+  'prettierd',
   'typescript-language-server',
 }
 local MasonInstallAll = function()
@@ -56,12 +58,12 @@ return {
         ensure_installed = MASON_ENSURED,
         ui = {
           border = 'rounded',
-        }
+        },
       },
       config = function(_, opts)
         require('mason').setup(opts)
-        vim.api.nvim_create_user_command("MasonInstallAll", MasonInstallAll, {})
-      end
+        vim.api.nvim_create_user_command('MasonInstallAll', MasonInstallAll, {})
+      end,
     },
     'WhoIsSethDaniel/mason-tool-installer.nvim',
 
@@ -159,7 +161,8 @@ return {
       'lua_ls',
       'gopls',
       'rust_analyzer',
-      os.getenv 'TSGOPATH' and 'tsgo' or 'ts_ls',
+      -- os.getenv 'TSGOPATH' and 'tsgo' or 'ts_ls',
+      'ts_ls',
       'bashls',
     }
 

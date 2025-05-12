@@ -7,7 +7,7 @@ return {
       vim.api.nvim_set_keymap('i', '<C-J>', 'copilot#Accept("<CR>")', { silent = true, expr = true })
 
       -- Enable Copilot; this is optional and i prefer to turn it on when needed which has shown to be **very rare**
-      -- vim.cmd 'Copilot enable'
+      vim.cmd 'Copilot disable'
     end,
   },
   {
