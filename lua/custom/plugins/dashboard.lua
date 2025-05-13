@@ -26,7 +26,7 @@ return {
 
     logo = string.rep('\n', 8) .. logo .. '\n\n'
     local builtin = require('telescope.builtin')
-    local useBuiltIn = function(mode)
+    local use_builtin = function(mode)
       return function()
         builtin[mode]()
       end
@@ -43,16 +43,16 @@ return {
         header = vim.split(logo, '\n'),
         -- stylua: ignore
         center = {
-          { action = useBuiltIn('find_files'), desc = " Find File", icon = " ", key = "f" },
+          { action = use_builtin('find_files'), desc = " Find File", icon = " ", key = "f" },
           { action = "ene | startinsert", desc = " New File", icon = " ", key = "n" },
-          { action = useBuiltIn('oldfiles'), desc = " Recent Files", icon = " ", key = "r" },
-          { action = useBuiltIn('live_grep'), desc = " Grep", icon = " ", key = "g" },
-          { action = useBuiltIn('marks'), desc = " Marks", icon = "󰍕 ", key = "m" },
+          { action = use_builtin('oldfiles'), desc = " Recent Files", icon = " ", key = "r" },
+          { action = use_builtin('live_grep'), desc = " Grep", icon = " ", key = "g" },
+          { action = use_builtin('marks'), desc = " Marks", icon = "󰍕 ", key = "m" },
           { action = "Lazy", desc = " Lazy", icon = "󰒲 ", key = "l" },
           { action = function() vim.api.nvim_input("<cmd>qa<cr>") end, desc = " Quit", icon = " ", key = "q" },
 
           -- TODO: we could instead use TMUX
-          -- { action = useBuiltIn(load()',              desc = " Restore Session", icon = " ", key = "s" },
+          -- { action = use_builtin(load()',              desc = " Restore Session", icon = " ", key = "s" },
         },
         footer = function()
           local stats = require('lazy').stats()
