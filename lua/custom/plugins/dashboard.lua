@@ -19,12 +19,19 @@ return {
 ||      .=='    _-'    `-_  `='    _-'   `-_    `='  _-'   `-_  /|  \/  |   ||
 ||   .=='    _-'          '-__\._-'         '-_./__-'         `' |. /|  |   ||
 ||.=='    _-'                                                     `' |  /==.||
-=='    _-'                           U W M                            \/   `==
+=='    _-'                          casguz4                           \/   `==
 \   _-'                                                                `-_   /
  `''                                                                      ``'
     ]]
 
     logo = string.rep('\n', 8) .. logo .. '\n\n'
+    local builtin = require('telescope.builtin')
+    local useBuiltIn = function(mode)
+      return function()
+        builtin[mode]()
+      end
+    end
+
     local opts = {
       theme = 'doom',
       hide = {
@@ -36,16 +43,16 @@ return {
         header = vim.split(logo, '\n'),
         -- stylua: ignore
         center = {
-          { action = 'lua require("telescope.builtin").find_files()',   desc = " Find File",    icon = " ",    key = "f" },
-          { action = "ene | startinsert",                               desc = " New File",     icon = " ",    key = "n" },
-          { action = 'lua require("telescope.builtin").oldfiles()',     desc = " Recent Files", icon = " ",    key = "r" },
-          { action = 'lua require("telescope.builtin").live_grep()',    desc = " Grep",         icon = " ",    key = "g" },
-          { action = 'lua require("telescope.builtin").marks()',        desc = " Marks",        icon = "󰍕 ",    key = "m" },
-          { action = "Lazy",                                            desc = " Lazy",         icon = "󰒲 ",    key = "l" },
-          { action = function() vim.api.nvim_input("<cmd>qa<cr>") end,  desc = " Quit",         icon = " ",    key = "q" },
+          { action = useBuiltIn('find_files'), desc = " Find File", icon = " ", key = "f" },
+          { action = "ene | startinsert", desc = " New File", icon = " ", key = "n" },
+          { action = useBuiltIn('oldfiles'), desc = " Recent Files", icon = " ", key = "r" },
+          { action = useBuiltIn('live_grep'), desc = " Grep", icon = " ", key = "g" },
+          { action = useBuiltIn('marks'), desc = " Marks", icon = "󰍕 ", key = "m" },
+          { action = "Lazy", desc = " Lazy", icon = "󰒲 ", key = "l" },
+          { action = function() vim.api.nvim_input("<cmd>qa<cr>") end, desc = " Quit", icon = " ", key = "q" },
 
           -- TODO: we could instead use TMUX
-          -- { action = 'lua require("persistence").load()',              desc = " Restore Session", icon = " ", key = "s" },
+          -- { action = useBuiltIn(load()',              desc = " Restore Session", icon = " ", key = "s" },
         },
         footer = function()
           local stats = require('lazy').stats()
