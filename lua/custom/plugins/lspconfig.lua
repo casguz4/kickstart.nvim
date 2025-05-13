@@ -51,7 +51,7 @@ return {
     -- Mason must be loaded before its dependents so we need to set it up here.
     -- NOTE: `opts = {}` is the same as calling `require('mason').setup({})`
     {
-      'williamboman/mason.nvim',
+      'mason-org/mason.nvim',
       opts = {
         PATH = 'prepend',
         registries = { 'github:mason-org/mason-registry' },
