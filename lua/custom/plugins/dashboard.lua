@@ -50,9 +50,6 @@ return {
           { action = use_builtin('marks'), desc = " Marks", icon = "󰍕 ", key = "m" },
           { action = "Lazy", desc = " Lazy", icon = "󰒲 ", key = "l" },
           { action = function() vim.api.nvim_input("<cmd>qa<cr>") end, desc = " Quit", icon = " ", key = "q" },
-
-          -- TODO: we could instead use TMUX
-          -- { action = use_builtin(load()',              desc = " Restore Session", icon = " ", key = "s" },
         },
         footer = function()
           local stats = require('lazy').stats()
