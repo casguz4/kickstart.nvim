@@ -108,6 +108,9 @@ vim.keymap.set('n', '<right>', '<cmd>echo "Use l to move!!"<CR>')
 vim.keymap.set('n', '<up>', '<cmd>echo "Use k to move!!"<CR>')
 vim.keymap.set('n', '<down>', '<cmd>echo "Use j to move!!"<CR>')
 
+-- key mapping for CopilotChat
+vim.keymap.set('n', '<leader>ct', ':CopilotChatToggle<CR>', { desc = 'Toggle Copilot Chat' })
+
 -- Keybinds to make split navigation easier.
 --  Use CTRL+<hjkl> to switch between windows
 --
@@ -134,8 +137,7 @@ vim.keymap.set('n', '<leader>bp', ':BufferLinePick<CR>', { desc = 'Pick buffer' 
 
 -- Go to buffer by number
 for i = 1, 7 do
-  vim.keymap.set('n', '<leader>' .. i, ':BufferLineGoToBuffer ' .. i .. '<CR>',
-    { desc = 'Go to buffer ' .. i })
+  vim.keymap.set('n', '<leader>' .. i, ':BufferLineGoToBuffer ' .. i .. '<CR>', { desc = 'Go to buffer ' .. i })
 end
 
 -- NOTE: Some terminals have colliding keymaps or are not able to send distinct keycodes
@@ -234,7 +236,7 @@ require('lazy').setup({
   -- Then, because we use the `opts` key (recommended), the configuration runs
   -- after the plugin has been loaded as `require(MODULE).setup(opts)`.
 
-  {                     -- Useful plugin to show you pending keybinds.
+  { -- Useful plugin to show you pending keybinds.
     'folke/which-key.nvim',
     event = 'VimEnter', -- Sets the loading event to 'VimEnter'
     opts = {
@@ -315,7 +317,7 @@ require('lazy').setup({
       { 'nvim-telescope/telescope-ui-select.nvim' },
 
       -- Useful for getting pretty icons, but requires a Nerd Font.
-      { 'nvim-tree/nvim-web-devicons',            enabled = vim.g.have_nerd_font },
+      { 'nvim-tree/nvim-web-devicons', enabled = vim.g.have_nerd_font },
     },
     config = function()
       -- Telescope is a fuzzy finder that comes with a lot of different things that
@@ -430,11 +432,22 @@ require('lazy').setup({
       end,
       formatters_by_ft = {
         lua = { 'stylua' },
+        -- Frontend formatters
+        javascript = { 'prettierd', 'prettier', stop_after_first = true },
+        typescript = { 'prettierd', 'prettier', stop_after_first = true },
+        javascriptreact = { 'prettierd', 'prettier', stop_after_first = true },
+        typescriptreact = { 'prettierd', 'prettier', stop_after_first = true },
+        vue = { 'prettierd', 'prettier', stop_after_first = true },
+        css = { 'prettierd', 'prettier', stop_after_first = true },
+        scss = { 'prettierd', 'prettier', stop_after_first = true },
+        less = { 'prettierd', 'prettier', stop_after_first = true },
+        html = { 'prettierd', 'prettier', stop_after_first = true },
+        json = { 'prettierd', 'prettier', stop_after_first = true },
+        jsonc = { 'prettierd', 'prettier', stop_after_first = true },
+        yaml = { 'prettierd', 'prettier', stop_after_first = true },
+        markdown = { 'prettierd', 'prettier', stop_after_first = true },
         -- Conform can also run multiple formatters sequentially
         -- python = { "isort", "black" },
-        --
-        -- You can use 'stop_after_first' to run the first available formatter from the list
-        -- javascript = { "prettierd", "prettier", stop_after_first = true },
       },
     },
   },
@@ -593,12 +606,21 @@ require('lazy').setup({
         'luadoc',
         'javascript',
         'typescript',
+        'tsx',
         'json',
+        'json5',
+        'jsonc',
+        'scss',
+        'vue',
+        'yaml',
+        'toml',
         'markdown',
         'markdown_inline',
         'query',
         'vim',
         'vimdoc',
+        'regex',
+        'jsdoc',
       },
       -- Autoinstall languages that are not installed
       auto_install = true,
@@ -664,3 +686,13 @@ require('lazy').setup({
 })
 
 vim.cmd.colorscheme 'catppuccin'
+-- Better diff options
+vim.opt.diffopt = 'internal,filler,closeoff,hiddenoff,algorithm:patience'
+
+-- Conflict marker highlighting
+vim.cmd [[
+  highlight ConflictMarkerBegin guibg=#2f628e
+  highlight ConflictMarkerOurs guibg=#2e5049
+  highlight ConflictMarkerTheirs guibg=#344f69
+  highlight ConflictMarkerEnd guibg=#2f628e
+]]

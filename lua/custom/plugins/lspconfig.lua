@@ -8,11 +8,20 @@ local MASON_ENSURED = {
   'eslint-lsp',
   'gopls',
   'html-lsp',
+  'json-lsp',
   'markdownlint',
   'marksman',
   'prettier',
   'prettierd',
   'typescript-language-server',
+  -- Debuggers for frontend
+  'js-debug-adapter',
+  'chrome-debug-adapter',
+  -- Linters for frontend
+  'eslint_d',
+  'stylelint',
+  'jsonlint',
+  'yamllint',
 }
 local MasonInstallAll = function()
   if MASON_ENSURED and #MASON_ENSURED > 0 then
@@ -164,6 +173,11 @@ return {
       -- os.getenv 'TSGOPATH' and 'tsgo' or 'ts_ls',
       'ts_ls',
       'bashls',
+      'html',
+      'cssls',
+      'jsonls',
+      'emmet_ls',
+      'eslint',
     }
 
     vim.lsp.buf.format { async = true }
