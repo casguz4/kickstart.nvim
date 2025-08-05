@@ -76,6 +76,37 @@ return {
       end,
       desc = 'Debug: See last session result.',
     },
+    -- Language-specific debugging shortcuts
+    {
+      '<leader>dl',
+      function()
+        require('dap').run_last()
+      end,
+      desc = 'Debug: Run Last',
+    },
+    {
+      '<leader>dr',
+      function()
+        require('dap').repl.open()
+      end,
+      desc = 'Debug: Open REPL',
+    },
+    {
+      '<leader>dk',
+      function()
+        require('dap.ui.widgets').hover()
+      end,
+      desc = 'Debug: Hover Variables',
+      mode = {'n', 'v'},
+    },
+    {
+      '<leader>ds',
+      function()
+        local widgets = require('dap.ui.widgets')
+        widgets.sidebar(widgets.scopes).open()
+      end,
+      desc = 'Debug: Sidebar Scopes',
+    },
   },
   config = function()
     local dap = require 'dap'
@@ -95,6 +126,11 @@ return {
       ensure_installed = {
         -- Update this to ensure that you have the debuggers for the langs you want
         'delve',
+        'node-debug2-adapter',
+        'chrome-debug-adapter',
+        'debugpy',
+        'codelldb',
+        'cpptools',
       },
     }
 
@@ -144,5 +180,200 @@ return {
         detached = vim.fn.has 'win32' == 0,
       },
     }
+    -- JavaScript/TypeScript adapters
+    dap.adapters.node2 = {
+      type = 'executable',
+      command = 'node',
+      args = {vim.fn.exepath('node-debug2-adapter')},
+    }
+
+    dap.adapters.chrome = {
+      type = 'executable',
+      command = 'node',
+      args = {vim.fn.exepath('chrome-debug-adapter')},
+    }
+
+    -- Python adapter
+    dap.adapters.python = {
+      type = 'executable',
+      command = 'python',
+      args = {'-m', 'debugpy.adapter'},
+    }
+
+    -- Rust/C/C++ adapter (codelldb)
+    dap.adapters.codelldb = {
+      type = 'server',
+      port = '${port}',
+      executable = {
+        command = vim.fn.exepath('codelldb'),
+        args = {'--port', '${port}'},
+      }
+    }
+
+    -- C/C++ adapter (cpptools)
+    dap.adapters.cppdbg = {
+      id = 'cppdbg',
+      type = 'executable',
+      command = vim.fn.exepath('OpenDebugAD7'),
+    }
+
+    -- JavaScript/TypeScript configurations
+    dap.configurations.javascript = {
+      {
+        name = 'Launch Node.js',
+        type = 'node2',
+        request = 'launch',
+        program = '${file}',
+        cwd = vim.fn.getcwd(),
+        sourceMaps = true,
+        protocol = 'inspector',
+        console = 'integratedTerminal',
+      },
+      {
+        name = 'Attach to Node.js',
+        type = 'node2',
+        request = 'attach',
+        port = 9229,
+        address = 'localhost',
+        sourceMaps = true,
+        skipFiles = {'<node_internals>/**'},
+      },
+      {
+        name = 'Launch Chrome',
+        type = 'chrome',
+        request = 'launch',
+        url = 'http://localhost:3000',
+        webRoot = '${workspaceFolder}',
+        sourceMaps = true,
+      },
+    }
+
+    dap.configurations.typescript = dap.configurations.javascript
+
+    -- Python configurations
+    dap.configurations.python = {
+      {
+        type = 'python',
+        request = 'launch',
+        name = 'Launch file',
+        program = '${file}',
+        pythonPath = function()
+          return '/usr/bin/python3'
+        end,
+      },
+      {
+        type = 'python',
+        request = 'launch',
+        name = 'Launch Django',
+        program = '${workspaceFolder}/manage.py',
+        args = {'runserver'},
+        django = true,
+        console = 'integratedTerminal',
+      },
+      {
+        type = 'python',
+        request = 'launch',
+        name = 'Launch Flask',
+        program = '${workspaceFolder}/app.py',
+        env = {
+          FLASK_ENV = 'development',
+        },
+        console = 'integratedTerminal',
+      },
+    }
+
+    -- Rust configurations
+    dap.configurations.rust = {
+      {
+        name = 'Launch Rust',
+        type = 'codelldb',
+        request = 'launch',
+        program = function()
+          return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/target/debug/', 'file')
+        end,
+        cwd = '${workspaceFolder}',
+        stopOnEntry = false,
+        args = {},
+      },
+      {
+        name = 'Launch Rust (with args)',
+        type = 'codelldb',
+        request = 'launch',
+        program = function()
+          return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/target/debug/', 'file')
+        end,
+        cwd = '${workspaceFolder}',
+        stopOnEntry = false,
+        args = function()
+          local args_string = vim.fn.input('Arguments: ')
+          return vim.split(args_string, ' ')
+        end,
+      },
+    }
+
+    -- C configurations
+    dap.configurations.c = {
+      {
+        name = 'Launch C (codelldb)',
+        type = 'codelldb',
+        request = 'launch',
+        program = function()
+          return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/', 'file')
+        end,
+        cwd = '${workspaceFolder}',
+        stopOnEntry = false,
+        args = {},
+      },
+      {
+        name = 'Launch C (cpptools)',
+        type = 'cppdbg',
+        request = 'launch',
+        program = function()
+          return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/', 'file')
+        end,
+        cwd = '${workspaceFolder}',
+        stopAtEntry = true,
+        setupCommands = {
+          {
+            text = '-enable-pretty-printing',
+            description =  'enable pretty printing',
+            ignoreFailures = false
+          },
+        },
+      },
+    }
+
+    -- C++ configurations
+    dap.configurations.cpp = {
+      {
+        name = 'Launch C++ (codelldb)',
+        type = 'codelldb',
+        request = 'launch',
+        program = function()
+          return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/', 'file')
+        end,
+        cwd = '${workspaceFolder}',
+        stopOnEntry = false,
+        args = {},
+      },
+      {
+        name = 'Launch C++ (cpptools)',
+        type = 'cppdbg',
+        request = 'launch',
+        program = function()
+          return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/', 'file')
+        end,
+        cwd = '${workspaceFolder}',
+        stopAtEntry = true,
+        setupCommands = {
+          {
+            text = '-enable-pretty-printing',
+            description =  'enable pretty printing',
+            ignoreFailures = false
+          },
+        },
+      },
+    }
+
   end,
 }

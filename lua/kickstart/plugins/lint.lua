@@ -7,6 +7,13 @@ return {
       local lint = require 'lint'
       lint.linters_by_ft = {
         markdown = { 'markdownlint' },
+        javascript = { 'eslint' },
+        typescript = { 'eslint' },
+        javascriptreact = { 'eslint' },
+        typescriptreact = { 'eslint' },
+        go = { 'golangci-lint' },
+        python = { 'ruff', 'mypy' },
+        rust = { 'clippy' },
       }
 
       -- To allow other plugins to add linters to require('lint').linters_by_ft,
