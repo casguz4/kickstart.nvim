@@ -25,12 +25,6 @@ return {
     ]]
 
     logo = string.rep('\n', 8) .. logo .. '\n\n'
-    local builtin = require('telescope.builtin')
-    local use_builtin = function(mode)
-      return function()
-        builtin[mode]()
-      end
-    end
 
     local opts = {
       theme = 'doom',
@@ -43,11 +37,11 @@ return {
         header = vim.split(logo, '\n'),
         -- stylua: ignore
         center = {
-          { action = use_builtin('find_files'), desc = " Find File", icon = " ", key = "f" },
+          { action = "FzfLua files", desc = " Find File", icon = " ", key = "f" },
           { action = "ene | startinsert", desc = " New File", icon = " ", key = "n" },
-          { action = use_builtin('oldfiles'), desc = " Recent Files", icon = " ", key = "r" },
-          { action = use_builtin('live_grep'), desc = " Grep", icon = " ", key = "g" },
-          { action = use_builtin('marks'), desc = " Marks", icon = "󰍕 ", key = "m" },
+          { action = "FzfLua oldfiles", desc = " Recent Files", icon = " ", key = "r" },
+          { action = "FzfLua live_grep", desc = " Grep", icon = " ", key = "g" },
+          { action = "FzfLua marks", desc = " Marks", icon = "󰍕 ", key = "m" },
           { action = "Lazy", desc = " Lazy", icon = "󰒲 ", key = "l" },
           { action = function() vim.api.nvim_input("<cmd>qa<cr>") end, desc = " Quit", icon = " ", key = "q" },
         },
