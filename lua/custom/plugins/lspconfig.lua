@@ -1,7 +1,9 @@
 -- inspired by @stephansama github.com/stephansama/nvim/lua/plugins/editor/mason.lua
 local MASON_ENSURED = {
   -- LSP servers
+  'astro-language-server',
   'bash-language-server',
+  'clangd',
   'css-lsp',
   'dockerfile-language-server',
   'emmet-ls',
@@ -10,6 +12,8 @@ local MASON_ENSURED = {
   'html-lsp',
   'json-lsp',
   'lua-language-server',
+  'rust-analyzer',
+  'svelte-language-server',
   'typescript-language-server',
   'vue-language-server',
 
@@ -218,8 +222,12 @@ return {
     local ts_server = (vim.env.TSGOPATH and vim.env.TSGOPATH ~= '') and 'tsgo' or 'ts_ls'
 
     vim.lsp.enable {
+      'astro',
       'lua_ls',
       'gopls',
+      'clangd',
+      'rust_analyzer',
+      'svelte',
       ts_server,
       'bashls',
       'html',
