@@ -539,7 +539,85 @@ require('lazy').setup({
       --  Check out: https://github.com/echasnovski/mini.nvim
     end,
   },
+  { -- Treesitter parsers + enable Neovim's native Treesitter features
+    'nvim-treesitter/nvim-treesitter',
+    build = ':TSUpdate',
+    config = function()
+      local ts = require 'nvim-treesitter'
 
+      local ensure_installed = {
+        'bash',
+        'c',
+        'css',
+        'diff',
+        'html',
+        'lua',
+        'luadoc',
+        'javascript',
+        'typescript',
+        'tsx',
+        'json',
+        'scss',
+        'vue',
+        'yaml',
+        'toml',
+        'markdown',
+        'markdown_inline',
+        'query',
+        'vim',
+        'vimdoc',
+        'regex',
+        'jsdoc',
+      }
+
+      -- Use the JSON parser for jsonc files (no separate jsonc parser in current nvim-treesitter).
+      vim.treesitter.language.register('json', 'jsonc')
+
+      vim.api.nvim_create_user_command('TSInstallAll', function()
+        ts.install(ensure_installed, { summary = true })
+      end, { desc = 'Install common Treesitter parsers' })
+
+      -- Install missing parsers once Neovim has a UI attached.
+      vim.api.nvim_create_autocmd('VimEnter', {
+        group = vim.api.nvim_create_augroup('custom-treesitter-install', { clear = true }),
+        once = true,
+        callback = function()
+          -- Avoid noisy installs in headless runs (CI, checkhealth, etc.)
+          if #vim.api.nvim_list_uis() == 0 then
+            return
+          end
+
+          local installed = ts.get_installed()
+          local missing = {}
+          for _, lang in ipairs(ensure_installed) do
+            if not vim.tbl_contains(installed, lang) then
+              table.insert(missing, lang)
+            end
+          end
+
+          if #missing > 0 then
+            ts.install(missing, { summary = true })
+          end
+        end,
+      })
+
+      -- Enable Treesitter features when a parser is available.
+      vim.api.nvim_create_autocmd('FileType', {
+        group = vim.api.nvim_create_augroup('custom-treesitter', { clear = true }),
+        callback = function(args)
+          if not pcall(vim.treesitter.start, args.buf) then
+            return
+          end
+
+          -- Syntax highlighting is provided by Neovim once a parser is started.
+          -- Folding is handled by nvim-ufo in this config.
+
+          -- Indentation (provided by nvim-treesitter)
+          vim.bo[args.buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+        end,
+      })
+    end,
+  },
   -- The following comments only work if you have downloaded the kickstart repo, not just copy pasted the
   -- init.lua. If you want these files, they are in the repository, so you can just download them and
   -- place them in the correct locations.
