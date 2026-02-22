@@ -515,10 +515,23 @@ require('lazy').setup({
 
       -- Add/delete/replace surroundings (brackets, quotes, etc.)
       --
-      -- - saiw) - [S]urround [A]dd [I]nner [W]ord [)]Paren
-      -- - sd'   - [S]urround [D]elete [']quotes
-      -- - sr)'  - [S]urround [R]eplace [)] [']
-      require('mini.surround').setup()
+      -- NOTE: mini.surround's default mappings use `s` as a prefix (sa/sd/sr/...),
+      -- which disables Vim's built-in `s` (substitute) by mapping `s` to <Nop>.
+      -- Remap mini.surround to `gs`-prefixed bindings to restore default `s`.
+      --
+      -- - gsaiw) - [S]urround [A]dd [I]nner [W]ord [)]Paren
+      -- - gsd'   - [S]urround [D]elete [']quotes
+      -- - gsr)'  - [S]urround [R]eplace [)] [']
+      require('mini.surround').setup({
+        mappings = {
+          add = 'gsa',
+          delete = 'gsd',
+          replace = 'gsr',
+          find = 'gsf',
+          find_left = 'gsF',
+          highlight = 'gsh',
+        },
+      })
 
       -- Simple and easy statusline.
       --  You could remove this setup call if you don't like it,
