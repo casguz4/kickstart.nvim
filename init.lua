@@ -570,14 +570,6 @@ require('lazy').setup({
         'jsdoc',
       }
 
-      require('nvim-treesitter.configs').setup {
-        ensure_installed = ensure_installed,
-        -- Auto-install missing parsers when entering a buffer
-        auto_install = true,
-        highlight = { enable = true },
-        indent = { enable = true },
-      }
-
       -- Use the JSON parser for jsonc files (no separate jsonc parser in current nvim-treesitter).
       vim.treesitter.language.register('json', 'jsonc')
 
@@ -596,12 +588,12 @@ require('lazy').setup({
           end
 
           local installed = ts.get_installed()
-          local missing = {}
-          for _, lang in ipairs(ensure_installed) do
-            if not vim.tbl_contains(installed, lang) then
-              table.insert(missing, lang)
-            end
-          end
+          local missing = vim
+            .iter(ensure_installed)
+            :filter(function(lang)
+              return not vim.tbl_contains(installed, lang)
+            end)
+            :totable()
 
           if #missing > 0 then
             ts.install(missing, { summary = true })
