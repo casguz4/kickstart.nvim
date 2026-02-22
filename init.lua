@@ -570,6 +570,14 @@ require('lazy').setup({
         'jsdoc',
       }
 
+      require('nvim-treesitter.configs').setup {
+        ensure_installed = ensure_installed,
+        -- Auto-install missing parsers when entering a buffer
+        auto_install = true,
+        highlight = { enable = true },
+        indent = { enable = true },
+      }
+
       -- Use the JSON parser for jsonc files (no separate jsonc parser in current nvim-treesitter).
       vim.treesitter.language.register('json', 'jsonc')
 
