@@ -30,9 +30,9 @@ local MASON_ENSURED = {
   'prettierd',
   'stylua',
 
-  -- Debuggers for frontend
+  -- Debug adapters
+  'delve',
   'js-debug-adapter',
-  'chrome-debug-adapter',
 }
 
 local function MasonInstallAll()
