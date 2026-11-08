@@ -111,6 +111,11 @@ In `src/App.vue`, `label` is a string literal on purpose: the Vue-plugin check
 hovers it and expects `"Clicked"`, a type that doesn't need `vue` installed.
 `src/folds.ts` opens with two import lines: the folding check expects them
 closed after open, so keep at least two imports at the top.
+`stylua.toml` does two jobs: it is the stylua config the `save:` check formats
+`lua/messy.lua` by, and it is the folding checks' "parser, no server" file. No
+server is configured for TOML but nvim-treesitter has its parser, so it must
+fold with treesitter. Keep it TOML, and don't route a TOML server in without
+moving that check to another such file.
 `data/vercel.json` and `data/compose.yaml` each carry a top-level key their
 SchemaStore schema forbids (`notARealOption`), for the schema-diagnostic checks.
 Keep their file names: SchemaStore picks the schema by name.
