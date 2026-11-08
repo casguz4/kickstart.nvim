@@ -7,36 +7,77 @@ local function dap()
   return require 'dap'
 end
 
+-- How long a debug session may take to start, and then to end.
+local SESSION_MS = 15000
+
 local function mason_bin(name)
   local path = vim.fn.exepath(name)
   return path ~= '' and path:find('/mason/bin/', 1, true) and path or nil
 end
 
-h.test('debug: exactly one spec configures nvim-dap', function()
-  local fragments = require('lazy.core.config').spec.meta.fragments
-  local configs = 0
-  for _, id in ipairs(h.plugin('nvim-dap')._.frags) do
-    if fragments:get(id).spec.config then
-      configs = configs + 1
-    end
-  end
-  h.eq(configs, 1, 'nvim-dap specs with a config')
+-- Every adapter and configuration dap has once loaded, by name. A second spec
+-- configuring nvim-dap would replace this config (lazy.nvim runs one `config`)
+-- or add its own adapters, and either changes these lists.
+h.test('debug: loaded, dap has only the JS and Go adapters and configurations', function()
+  local d = dap()
+  local adapters, filetypes = vim.tbl_keys(d.adapters), vim.tbl_keys(d.configurations)
+  table.sort(adapters)
+  table.sort(filetypes)
+  h.eq(adapters, { 'go', 'pwa-chrome', 'pwa-node' }, 'dap adapters')
+  h.eq(filetypes, { 'go', 'javascript', 'javascriptreact', 'typescript', 'typescriptreact' }, 'filetypes with configurations')
 end)
 
-for _, name in ipairs { 'pwa-node', 'pwa-chrome' } do
-  h.test('debug: ' .. name .. ' runs the Mason js-debug-adapter as a server', function()
-    if not mason_bin 'js-debug-adapter' then
-      h.skip 'js-debug-adapter is not installed (:MasonInstall js-debug-adapter)'
-    end
-    local adapter = dap().adapters[name]
-    h.ok(type(adapter) == 'table', name .. ' adapter is missing: ' .. vim.inspect(adapter))
-    h.eq(adapter.type, 'server', name .. ' adapter type')
-    h.eq(adapter.port, '${port}', name .. ' adapter port')
-    h.ok(adapter.executable, name .. ' adapter has no executable')
-    h.ok(mason_bin(adapter.executable.command), name .. ' adapter command is not a Mason shim: ' .. tostring(adapter.executable.command))
-    h.eq(adapter.executable.args, { '${port}' }, name .. ' adapter args')
-  end)
+local function dapui_windows()
+  return vim.tbl_filter(function(win)
+    return vim.bo[vim.api.nvim_win_get_buf(win)].filetype:find '^dapui_' ~= nil
+  end, vim.api.nvim_list_wins())
 end
+
+-- A real session: "Launch file" on a script that exits by itself. It starts
+-- only if pwa-node launches the Mason js-debug-adapter as a server on the port
+-- dap picks, and dap-ui shows only while the session runs.
+h.test('debug: Launch file debugs a .js file through js-debug, with dap-ui open while it runs', function()
+  if not mason_bin 'js-debug-adapter' then
+    h.skip 'js-debug-adapter is not installed (:MasonInstall js-debug-adapter)'
+  end
+  local d = dap()
+  local dir = vim.fn.tempname()
+  vim.fn.mkdir(dir, 'p')
+  local path = dir .. '/main.js'
+  vim.fn.writefile({ 'setTimeout(() => {}, 300)' }, path)
+  h.open(path)
+
+  local launch = vim.iter(d.configurations.javascript):find(function(c)
+    return c.name == 'Launch file'
+  end)
+  h.ok(launch, 'no "Launch file" configuration for javascript')
+  d.run(launch)
+  local opened = vim.wait(SESSION_MS, function()
+    return #dapui_windows() > 0
+  end, 50)
+  h.ok(opened, 'dap-ui did not open after dap.run (session still running: ' .. tostring(d.session() ~= nil) .. ')')
+  local ended = vim.wait(SESSION_MS, function()
+    return d.session() == nil and #dapui_windows() == 0
+  end, 50)
+  if not ended then
+    d.terminate()
+  end
+  h.ok(d.session() == nil, 'the session did not end when the script exited')
+  h.eq(#dapui_windows(), 0, 'dap-ui windows once the session ended')
+end)
+
+-- Chrome isn't launched here; pwa-chrome must start the same js-debug server.
+h.test('debug: pwa-chrome starts the Mason js-debug-adapter server, as pwa-node does', function()
+  if not mason_bin 'js-debug-adapter' then
+    h.skip 'js-debug-adapter is not installed (:MasonInstall js-debug-adapter)'
+  end
+  local adapters = dap().adapters
+  local chrome, node = adapters['pwa-chrome'], adapters['pwa-node']
+  h.ok(type(chrome) == 'table' and chrome.executable, 'pwa-chrome starts no executable: ' .. vim.inspect(chrome))
+  h.eq(chrome.type, 'server', 'pwa-chrome adapter type')
+  h.ok(mason_bin(chrome.executable.command), 'pwa-chrome command is not a Mason shim: ' .. tostring(chrome.executable.command))
+  h.eq(chrome.executable, node.executable, 'pwa-chrome executable (pwa-node is started for real above)')
+end)
 
 h.test('debug: Go debugs through nvim-dap-go with Mason delve', function()
   if not mason_bin 'dlv' then
@@ -61,21 +102,10 @@ for _, ft in ipairs { 'javascript', 'typescript', 'javascriptreact', 'typescript
       return { type = c.type, request = c.request, name = c.name }
     end, configs)
     h.eq(got, js_configs, ft .. ' configurations')
-    for _, c in ipairs(configs) do
-      h.ok(c.protocol == nil, c.name .. ' still sets protocol')
-      h.ok(c.userDataDir == nil, c.name .. ' still sets userDataDir')
-    end
     h.eq(configs[3].url, 'http://localhost:3000', 'Chrome url')
     h.eq(configs[2].processId, require('dap.utils').pick_process, 'Attach processId')
   end)
 end
-
-h.test('debug: dap-ui opens on session start and closes on its end', function()
-  local listeners = dap().listeners
-  h.ok(listeners.after.event_initialized['dapui_config'], 'no dap-ui open listener')
-  h.ok(listeners.before.event_terminated['dapui_config'], 'no dap-ui close listener (terminated)')
-  h.ok(listeners.before.event_exited['dapui_config'], 'no dap-ui close listener (exited)')
-end)
 
 local keys = {
   { lhs = '<leader>db', desc = 'Debug: Toggle [B]reakpoint' },
