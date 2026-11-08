@@ -10,7 +10,6 @@ local present = {
   'bufferline.nvim',
   'catppuccin',
   'conform.nvim',
-  'copilot.vim',
   'dashboard-nvim',
   'fidget.nvim',
   'friendly-snippets',
@@ -43,6 +42,7 @@ local present = {
 }
 
 local absent = {
+  'copilot.vim',
   'nvim-lint',
 }
 
