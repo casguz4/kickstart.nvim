@@ -9,6 +9,13 @@ vim.o.foldcolumn = '1'
 vim.o.foldlevel = 99
 vim.o.foldlevelstart = 99
 vim.o.foldenable = true
+-- Native folding: LSP folding ranges when a server has them (set on LspAttach),
+-- else treesitter (set when a parser starts), else indent.
+vim.o.foldmethod = 'indent'
+-- A closed fold shows its first line, highlighted.
+vim.o.foldtext = ''
+-- Keep the 1-wide fold column free of nested level digits.
+vim.opt.fillchars:append { foldinner = ' ' }
 
 -- Set to true if you have a Nerd Font installed and selected in the terminal
 vim.g.have_nerd_font = true
@@ -89,7 +96,7 @@ vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 vim.keymap.set('n', '<leader>w', '<cmd>w<CR>', { desc = 'Save file' })
 vim.keymap.set('n', '<leader>W', '<cmd>wa<CR>', { desc = 'Save all files' })
 vim.keymap.set('n', '<leader>Q', '<cmd>qa<CR>', { desc = 'Quit all files' })
-vim.keymap.set('n', '<leader>S', '<cmd>qa<CR>', { desc = 'Save & Quit all files' })
+vim.keymap.set('n', '<leader>S', '<cmd>wqa<CR>', { desc = 'Save & Quit all files' })
 
 -- Diagnostic keymaps
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
@@ -107,9 +114,6 @@ vim.keymap.set('n', '<left>', '<cmd>echo "Use h to move!!"<CR>')
 vim.keymap.set('n', '<right>', '<cmd>echo "Use l to move!!"<CR>')
 vim.keymap.set('n', '<up>', '<cmd>echo "Use k to move!!"<CR>')
 vim.keymap.set('n', '<down>', '<cmd>echo "Use j to move!!"<CR>')
-
--- key mapping for CopilotChat
-vim.keymap.set('n', '<leader>cc', ':CopilotChatToggle<CR>', { desc = 'Toggle Copilot Chat' })
 
 -- Keybinds to make split navigation easier.
 --  Use CTRL+<hjkl> to switch between windows
@@ -284,7 +288,10 @@ require('lazy').setup({
       spec = {
         { '<leader>s', group = '[S]earch' },
         { '<leader>t', group = '[T]oggle' },
+        { '<leader>b', group = '[B]uffer' },
+        { '<leader>d', group = '[D]ebug' },
         { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } },
+        { '<leader>a', group = '[A]I (Claude Code)', mode = { 'n', 'v' } },
       },
     },
   },
@@ -337,7 +344,7 @@ require('lazy').setup({
     keys = {
       { '<leader>sh', '<cmd>FzfLua helptags<CR>', desc = '[S]earch [H]elp' },
       { '<leader>sk', '<cmd>FzfLua keymaps<CR>', desc = '[S]earch [K]eymaps' },
-      { '<leader>b', '<cmd>FzfLua buffers<CR>', desc = '[B]uffers' },
+      { '<leader>sb', '<cmd>FzfLua buffers<CR>', desc = '[S]earch [B]uffers' },
       { '<leader>ss', '<cmd>FzfLua<CR>', desc = '[S]earch [S]elect FzfLua' },
       { '<leader>sw', '<cmd>FzfLua grep_cword<CR>', desc = '[S]earch current [W]ord' },
       { '<leader>g', '<cmd>FzfLua live_grep<CR>', desc = 'search by [G]rep' },
@@ -498,9 +505,15 @@ require('lazy').setup({
       --
       -- Examples:
       --  - va)  - [V]isually select [A]round [)]paren
-      --  - yinq - [Y]ank [I]nside [N]ext [Q]uote
+      --  - yiNq - [Y]ank [I]nside [N]ext [Q]uote
       --  - ci'  - [C]hange [I]nside [']quote
-      require('mini.ai').setup { n_lines = 500 }
+      --
+      -- "next" lives on aN/iN so 0.12's an/in (and ]n/[n) incremental
+      -- selection keeps its keys.
+      require('mini.ai').setup {
+        n_lines = 500,
+        mappings = { around_next = 'aN', inside_next = 'iN' },
+      }
 
       -- Add/delete/replace surroundings (brackets, quotes, etc.)
       --
@@ -621,7 +634,11 @@ require('lazy').setup({
           end
 
           -- Syntax highlighting is provided by Neovim once a parser is started.
-          -- Folding is handled by nvim-ufo in this config.
+          -- Fold with treesitter (an LSP with folding ranges takes over on attach).
+          for _, win in ipairs(vim.fn.win_findbuf(args.buf)) do
+            vim.wo[win][0].foldmethod = 'expr'
+            vim.wo[win][0].foldexpr = 'v:lua.vim.treesitter.foldexpr()'
+          end
 
           -- Indentation (provided by nvim-treesitter)
           vim.bo[args.buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
@@ -671,8 +688,8 @@ require('lazy').setup({
 })
 
 vim.cmd.colorscheme 'catppuccin-nvim'
--- Better diff options
-vim.opt.diffopt = 'internal,filler,closeoff,hiddenoff,algorithm:patience'
+-- Better diff options, on top of the 0.12 default (inline:char, linematch:40, ...)
+vim.opt.diffopt:append { 'hiddenoff', 'algorithm:patience' }
 
 -- Conflict marker highlighting
 vim.cmd [[

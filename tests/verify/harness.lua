@@ -370,6 +370,29 @@ function h.map(mode, lhs, buf)
   return not vim.tbl_isempty(m) and m or nil
 end
 
+---The label which-key shows for the key group at `lhs` (e.g. '[S]earch'), or
+---nil when `lhs` is not a group. Read from which-key's key tree for the current
+---buffer, then from the groups declared to which-key: a group with no keys
+---under it yet is declared but hidden until a key lands there.
+---@param lhs string e.g. '<leader>s'
+---@param mode? string default 'n'
+---@return string?
+function h.key_group(lhs, mode)
+  mode = mode or 'n'
+  local wk_mode = require('which-key.buf').get { mode = mode, update = true }
+  local node = wk_mode and wk_mode.tree:find(lhs)
+  if node and node:is_group() then
+    return node.desc
+  end
+  local util = require 'which-key.util'
+  local keys = table.concat(util.keys(lhs, { norm = true }))
+  for _, m in ipairs(require('which-key.config').mappings) do
+    if m.group and m.mode == mode and table.concat(util.keys(m.lhs, { norm = true })) == keys then
+      return m.desc
+    end
+  end
+end
+
 ---An option's value. Without `buf`, the global value (what the config set and
 ---new windows/buffers start from). With `buf`, the value in effect there
 ---(window-local options are read from a window showing it).
