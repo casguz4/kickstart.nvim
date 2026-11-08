@@ -3,7 +3,6 @@ local h = ...
 -- Plugins the config ships today. Migration tickets move entries from
 -- here to `absent` as they remove plugins, and add the ones they introduce.
 local present = {
-  'LuaSnip',
   'SchemaStore.nvim',
   'blink.cmp',
   'bufferline.nvim',
@@ -41,6 +40,7 @@ local present = {
 
 local absent = {
   'CopilotChat.nvim',
+  'LuaSnip',
   'mason-nvim-dap.nvim',
   'nvim-lint',
   'nvim-ufo',

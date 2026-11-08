@@ -74,7 +74,7 @@ return {
     -- Useful status updates for LSP.
     { 'j-hui/fidget.nvim', opts = {} },
 
-    -- Allows extra capabilities provided by blink.cmp
+    -- Loads first, so its completion capabilities are on '*' before servers start.
     'saghen/blink.cmp',
   },
 
@@ -160,13 +160,6 @@ return {
         end)
       end,
     })
-
-    -- Capabilities
-    local capabilities = vim.lsp.protocol.make_client_capabilities()
-    capabilities = vim.tbl_deep_extend('force', capabilities, require('blink.cmp').get_lsp_capabilities({}, false))
-
-    -- Default settings for all LSP configs loaded from runtimepath (including nvim-lspconfig's `lsp/*.lua`).
-    vim.lsp.config('*', { capabilities = capabilities })
 
     -- Formatting belongs to Prettier (through conform) and stylua, so no other
     -- server may format: conform's `lsp_format = 'prefer'` would pick it over
