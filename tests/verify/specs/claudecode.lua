@@ -23,9 +23,12 @@ for _, case in ipairs(keys) do
   end)
 end
 
-h.test('claudecode: :ClaudeCode exists for <leader>cc to run', function()
-  h.eq(vim.fn.exists ':ClaudeCode', 2, ':ClaudeCode command')
-end)
+-- The commands those keys run, there before any key has loaded the plugin.
+for _, cmd in ipairs { 'ClaudeCode', 'ClaudeCodeFocus', 'ClaudeCodeSelectModel', 'ClaudeCodeAdd', 'ClaudeCodeSend', 'ClaudeCodeDiffAccept', 'ClaudeCodeDiffDeny' } do
+  h.test('claudecode: :' .. cmd .. ' exists for its key to run', function()
+    h.eq(vim.fn.exists(':' .. cmd), 2, ':' .. cmd .. ' command')
+  end)
+end
 
 for _, mode in ipairs { 'n', 'x' } do
   h.test('claudecode: which-key shows <leader>a as a group in mode ' .. mode, function()

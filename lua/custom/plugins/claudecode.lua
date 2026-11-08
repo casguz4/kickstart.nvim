@@ -4,32 +4,26 @@ return {
   opts = {
     terminal = { provider = 'native' },
   },
-  -- Command stubs, so `:ClaudeCode*` works before any key has loaded the plugin.
+  -- Command stubs for what the keys run, so they work before any key has
+  -- loaded the plugin. Loading it defines the rest of `:ClaudeCode*`.
   cmd = {
     'ClaudeCode',
     'ClaudeCodeFocus',
     'ClaudeCodeSelectModel',
     'ClaudeCodeAdd',
     'ClaudeCodeSend',
-    'ClaudeCodeTreeAdd',
-    'ClaudeCodeStatus',
-    'ClaudeCodeStart',
-    'ClaudeCodeStop',
-    'ClaudeCodeOpen',
-    'ClaudeCodeClose',
     'ClaudeCodeDiffAccept',
     'ClaudeCodeDiffDeny',
-    'ClaudeCodeCloseAllDiffs',
   },
   keys = {
-    { '<leader>cc', '<cmd>ClaudeCode<cr>', desc = 'Toggle [C]laude [C]ode' },
-    { '<leader>af', '<cmd>ClaudeCodeFocus<cr>', desc = 'Focus Claude' },
-    { '<leader>ar', '<cmd>ClaudeCode --resume<cr>', desc = 'Resume Claude' },
-    { '<leader>aC', '<cmd>ClaudeCode --continue<cr>', desc = 'Continue Claude' },
-    { '<leader>am', '<cmd>ClaudeCodeSelectModel<cr>', desc = 'Select Claude model' },
-    { '<leader>ab', '<cmd>ClaudeCodeAdd %<cr>', desc = 'Add current buffer' },
-    { '<leader>as', '<cmd>ClaudeCodeSend<cr>', mode = 'v', desc = 'Send to Claude' },
-    { '<leader>aa', '<cmd>ClaudeCodeDiffAccept<cr>', desc = 'Accept diff' },
-    { '<leader>ad', '<cmd>ClaudeCodeDiffDeny<cr>', desc = 'Deny diff' },
+    { '<leader>cc', '<cmd>ClaudeCode<CR>', desc = 'Toggle [C]laude [C]ode' },
+    { '<leader>af', '<cmd>ClaudeCodeFocus<CR>', desc = 'Focus Claude' },
+    { '<leader>ar', '<cmd>ClaudeCode --resume<CR>', desc = 'Resume Claude' },
+    { '<leader>aC', '<cmd>ClaudeCode --continue<CR>', desc = 'Continue Claude' },
+    { '<leader>am', '<cmd>ClaudeCodeSelectModel<CR>', desc = 'Select Claude model' },
+    { '<leader>ab', '<cmd>ClaudeCodeAdd %<CR>', desc = 'Add current buffer' },
+    { '<leader>as', '<cmd>ClaudeCodeSend<CR>', mode = 'v', desc = 'Send to Claude' },
+    { '<leader>aa', '<cmd>ClaudeCodeDiffAccept<CR>', desc = 'Accept diff' },
+    { '<leader>ad', '<cmd>ClaudeCodeDiffDeny<CR>', desc = 'Deny diff' },
   },
 }
