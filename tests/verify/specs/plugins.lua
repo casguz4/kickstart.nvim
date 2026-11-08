@@ -1,6 +1,6 @@
 local h = ...
 
--- Plugins the 0.11 config ships today. Migration tickets move entries from
+-- Plugins the config ships today. Migration tickets move entries from
 -- here to `absent` as they remove plugins, and add the ones they introduce.
 local present = {
   'CopilotChat.nvim',
@@ -55,3 +55,9 @@ for _, name in ipairs(absent) do
     h.ok(not h.plugin(name), name .. ' is still in the lazy.nvim registry')
   end)
 end
+
+h.test('plugins: mini.nvim modules are set up', function()
+  h.ok(h.map('n', 'gsa'), 'gsa (mini.surround add) is not mapped')
+  h.ok(h.map('o', 'a'), 'a (mini.ai textobjects) is not mapped in operator-pending mode')
+  h.ok(vim.o.statusline:find('MiniStatusline', 1, true), 'statusline is not mini.statusline: ' .. vim.o.statusline)
+end)

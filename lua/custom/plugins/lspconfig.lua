@@ -142,7 +142,7 @@ return {
         local bufnr = args.buf
 
         local map = function(mode, lhs, rhs, desc)
-          vim.keymap.set(mode, lhs, rhs, { buffer = bufnr, desc = desc })
+          vim.keymap.set(mode, lhs, rhs, { buf = bufnr, desc = desc })
         end
 
         map('n', 'gd', vim.lsp.buf.definition, 'LSP: Go to definition')
@@ -152,13 +152,11 @@ return {
         map('n', 'K', vim.lsp.buf.hover, 'LSP: Hover')
         map('n', '<leader>rn', vim.lsp.buf.rename, 'LSP: Rename')
         map({ 'n', 'v' }, '<leader>ca', vim.lsp.buf.code_action, 'LSP: Code action')
-        map('n', '[d', vim.diagnostic.goto_prev, 'Diagnostics: Previous')
-        map('n', ']d', vim.diagnostic.goto_next, 'Diagnostics: Next')
         map('n', '<leader>e', vim.diagnostic.open_float, 'Diagnostics: Float')
 
         local client_id = args.data and args.data.client_id
         local client = client_id and vim.lsp.get_client_by_id(client_id) or nil
-        if client and client.supports_method 'textDocument/inlayHint' then
+        if client and client:supports_method 'textDocument/inlayHint' then
           vim.lsp.inlay_hint.enable(true, { bufnr = bufnr })
         end
       end,

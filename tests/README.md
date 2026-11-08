@@ -57,19 +57,20 @@ end)
 Name tests `<area>: <behavior>` so the filter argument can pick an area.
 Assert behavior, never how a plugin spec or module is laid out.
 
-| Helper                                          | Use it for                                                                                                                          |
-| ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| `h.test(name, fn)`                              | Register a test.                                                                                                                    |
-| `h.ok(cond, msg)` / `h.eq(a, b, what)`          | Assert. A failure reports the spec file and line.                                                                                   |
-| `h.skip(reason)`                                | End a test as skipped.                                                                                                              |
-| `h.startup_errors()`                            | Error lines in `:messages` + ERROR notifications, captured right after boot.                                                        |
-| `h.checkhealth_errors(section)`                 | `ERROR` lines from `:checkhealth <section>`.                                                                                        |
-| `h.plugin(name)`                                | The lazy.nvim registry entry for a plugin (loaded or not), or `nil`.                                                                |
-| `h.open(rel)`                                   | Edit a fixture file; returns the buffer.                                                                                            |
-| `h.servers(buf)`                                | Sorted names of the clients attached to a buffer.                                                                                   |
-| `h.expect_servers(rel, { includes, excludes })` | Open a fixture file, wait for `includes` to attach, fail on missing or `excludes`. Skips when an `includes` binary isn't installed. |
-| `h.map(mode, lhs, buf?)`                        | `maparg()` details for whatever answers `lhs` (buffer-local maps count when `buf` is given), or `nil`.                              |
-| `h.opt(name, buf?)`                             | An option's global value, or its value in `buf` (window options read from its window).                                              |
+| Helper                                          | Use it for                                                                                                                                |
+| ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `h.test(name, fn)`                              | Register a test.                                                                                                                          |
+| `h.ok(cond, msg)` / `h.eq(a, b, what)`          | Assert. A failure reports the spec file and line.                                                                                         |
+| `h.skip(reason)`                                | End a test as skipped.                                                                                                                    |
+| `h.startup_errors()`                            | Error lines in `:messages` + ERROR notifications, captured right after boot.                                                              |
+| `h.checkhealth_errors(section)`                 | `ERROR` lines from `:checkhealth <section>`.                                                                                              |
+| `h.checkhealth_problems(section)`               | `WARNING`/`ERROR` items from `:checkhealth <section>`, each `{ level, text, detail }` (`detail`: the indented lines, e.g. a stack trace). |
+| `h.plugin(name)`                                | The lazy.nvim registry entry for a plugin (loaded or not), or `nil`.                                                                      |
+| `h.open(rel)`                                   | Edit a fixture file; returns the buffer.                                                                                                  |
+| `h.servers(buf)`                                | Sorted names of the clients attached to a buffer.                                                                                         |
+| `h.expect_servers(rel, { includes, excludes })` | Open a fixture file, wait for `includes` to attach, fail on missing or `excludes`. Skips when an `includes` binary isn't installed.       |
+| `h.map(mode, lhs, buf?)`                        | `maparg()` details for whatever answers `lhs` (buffer-local maps count when `buf` is given), or `nil`.                                    |
+| `h.opt(name, buf?)`                             | An option's global value, or its value in `buf` (window options read from its window).                                                    |
 
 ## Fixture
 

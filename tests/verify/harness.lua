@@ -91,10 +91,11 @@ function h.startup_errors()
   return startup_errors
 end
 
----ERROR lines reported by `:checkhealth {section}`.
----@param section string e.g. 'vim.lsp'
----@return string[]
-function h.checkhealth_errors(section)
+---WARNING and ERROR items reported by `:checkhealth {section}`. Each item is
+---its headline plus the indented lines under it (advice, stack traces).
+---@param section string e.g. 'vim.deprecated'
+---@return { level: 'WARNING'|'ERROR', text: string, detail: string[] }[]
+function h.checkhealth_problems(section)
   local tab = vim.api.nvim_get_current_tabpage()
   vim.cmd('silent checkhealth ' .. section)
   h.ok(vim.api.nvim_get_current_tabpage() ~= tab, ':checkhealth ' .. section .. ' did not open a report tab')
@@ -102,14 +103,34 @@ function h.checkhealth_errors(section)
   vim.wait(10000, function()
     return vim.api.nvim_buf_line_count(buf) > 1
   end)
-  local found = {}
+  -- Items read `- ⚠️ WARNING msg` / `- ❌ ERROR msg`; their detail is every
+  -- following line indented deeper than the item.
+  local found, item, item_indent = {}, nil, 0
   for _, line in ipairs(vim.api.nvim_buf_get_lines(buf, 0, -1, false)) do
-    if line:find '^%s*%-.*ERROR' then
-      table.insert(found, vim.trim(line))
+    local indent, level = line:match '^(%s*)%-%s+[^%a]*(%u+)'
+    if level == 'WARNING' or level == 'ERROR' then
+      item, item_indent = { level = level, text = vim.trim(line), detail = {} }, #indent
+      table.insert(found, item)
+    elseif item and #line:match '^%s*' > item_indent and line:find '%S' then
+      table.insert(item.detail, vim.trim(line))
+    else
+      item = nil
     end
   end
   vim.cmd 'tabclose'
   return found
+end
+
+---ERROR lines reported by `:checkhealth {section}`.
+---@param section string e.g. 'vim.lsp'
+---@return string[]
+function h.checkhealth_errors(section)
+  local errors = vim.tbl_filter(function(p)
+    return p.level == 'ERROR'
+  end, h.checkhealth_problems(section))
+  return vim.tbl_map(function(p)
+    return p.text
+  end, errors)
 end
 
 -- [[ Plugins ]]
