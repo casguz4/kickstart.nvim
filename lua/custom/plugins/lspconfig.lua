@@ -4,6 +4,7 @@ local MASON_ENSURED = {
   'astro-language-server',
   'bash-language-server',
   'clangd',
+  'copilot-language-server',
   'css-lsp',
   'dockerfile-language-server',
   'emmet-ls',
@@ -309,5 +310,8 @@ return {
       'vtsls',
       'vue_ls',
     }
+
+    -- Copilot is not enabled here: it stays off until <leader>tc.
+    require('custom.copilot').setup()
   end,
 }

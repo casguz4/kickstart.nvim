@@ -9,7 +9,6 @@ local present = {
   'catppuccin',
   'claudecode.nvim',
   'conform.nvim',
-  'copilot.vim',
   'dashboard-nvim',
   'fidget.nvim',
   'friendly-snippets',
@@ -42,6 +41,7 @@ local present = {
 local absent = {
   'CopilotChat.nvim',
   'LuaSnip',
+  'copilot.vim',
   'nvim-lint',
   'nvim-ufo',
   'promise-async',
