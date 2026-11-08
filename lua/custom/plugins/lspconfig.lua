@@ -44,43 +44,6 @@ return {
   -- Main LSP Configuration (uses Neovim 0.11+ native `vim.lsp.config()` + `vim.lsp.enable()`)
   'neovim/nvim-lspconfig',
   dependencies = {
-    {
-      'kevinhwang91/nvim-ufo',
-      dependencies = { 'kevinhwang91/promise-async' },
-      config = function()
-        local ufo = require 'ufo'
-
-        vim.keymap.set('n', 'zR', ufo.openAllFolds, { desc = 'Open all folds' })
-        vim.keymap.set('n', 'zM', ufo.closeAllFolds, { desc = 'Close all folds' })
-
-        local function chained_providers(bufnr)
-          local function handle_fallback(err, provider)
-            if type(err) == 'string' and err:match 'UfoFallbackException' then
-              return ufo.getFolds(bufnr, provider)
-            end
-            return require('promise').reject(err)
-          end
-
-          return ufo
-            .getFolds(bufnr, 'lsp')
-            :catch(function(err)
-              return handle_fallback(err, 'treesitter')
-            end)
-            :catch(function(err)
-              return handle_fallback(err, 'indent')
-            end)
-        end
-
-        ufo.setup {
-          provider_selector = function(bufnr)
-            return function()
-              return chained_providers(bufnr)
-            end
-          end,
-        }
-      end,
-    },
-
     -- Mason (installs external language servers/tools)
     {
       'mason-org/mason.nvim',
@@ -163,17 +126,47 @@ return {
       end,
     })
 
+    -- Folding: a server with folding ranges takes over from treesitter/indent
+    -- in every window showing the buffer, and closes the imports on open.
+    local folding = vim.api.nvim_create_augroup('custom-lsp-folding', { clear = true })
+    vim.api.nvim_create_autocmd('LspAttach', {
+      group = folding,
+      callback = function(args)
+        local client = vim.lsp.get_client_by_id(args.data.client_id)
+        if not (client and client:supports_method('textDocument/foldingRange', args.buf)) then
+          return
+        end
+        for _, win in ipairs(vim.fn.win_findbuf(args.buf)) do
+          vim.wo[win][0].foldmethod = 'expr'
+          vim.wo[win][0].foldexpr = 'v:lua.vim.lsp.foldexpr()'
+        end
+      end,
+    })
+    vim.api.nvim_create_autocmd('LspNotify', {
+      group = folding,
+      callback = function(args)
+        local client = vim.lsp.get_client_by_id(args.data.client_id)
+        if args.data.method ~= 'textDocument/didOpen' or not (client and client:supports_method('textDocument/foldingRange', args.buf)) then
+          return
+        end
+        -- A client's didOpen goes out before its LspAttach, when LSP folding
+        -- hasn't started for the buffer and foldclose() does nothing. Evaluating
+        -- the foldexpr starts it on the next tick; close the imports after that.
+        vim.api.nvim_buf_call(args.buf, function()
+          vim.lsp.foldexpr(1)
+        end)
+        vim.schedule(function()
+          local win = vim.fn.bufwinid(args.buf)
+          if win ~= -1 then
+            vim.lsp.foldclose('imports', win)
+          end
+        end)
+      end,
+    })
+
     -- Capabilities
     local capabilities = vim.lsp.protocol.make_client_capabilities()
     capabilities = vim.tbl_deep_extend('force', capabilities, require('blink.cmp').get_lsp_capabilities({}, false))
-    capabilities = vim.tbl_deep_extend('force', capabilities, {
-      textDocument = {
-        foldingRange = {
-          dynamicRegistration = false,
-          lineFoldingOnly = true,
-        },
-      },
-    })
 
     -- Default settings for all LSP configs loaded from runtimepath (including nvim-lspconfig's `lsp/*.lua`).
     vim.lsp.config('*', { capabilities = capabilities })

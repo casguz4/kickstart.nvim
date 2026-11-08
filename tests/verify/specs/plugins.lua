@@ -33,10 +33,8 @@ local present = {
   'nvim-nio',
   'nvim-treesitter',
   'nvim-ts-autotag',
-  'nvim-ufo',
   'nvim-web-devicons',
   'plenary.nvim',
-  'promise-async',
   'todo-comments.nvim',
   'vim-sleuth',
   'which-key.nvim',
@@ -44,6 +42,8 @@ local present = {
 
 local absent = {
   'nvim-lint',
+  'nvim-ufo',
+  'promise-async',
 }
 
 for _, name in ipairs(present) do
