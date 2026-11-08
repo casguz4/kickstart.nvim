@@ -80,6 +80,8 @@ Assert behavior, never how a plugin spec or module is laid out.
 with an unused import and a fixable ESLint issue, for the fix-on-save checks.
 Don't format it. In `src/index.ts`, `greet(visitor)` passes a variable on purpose:
 the hints check needs a non-literal argument, so don't change it to a literal.
+In `src/App.vue`, `label` is a string literal on purpose: the Vue-plugin check
+hovers it and expects `"Clicked"`, a type that doesn't need `vue` installed.
 
 ESLint needs its packages to lint (`npm install` inside `fixture/`, and
 `node_modules` is gitignored). The `eslint` server attaches without them.

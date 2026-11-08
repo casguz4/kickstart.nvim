@@ -15,6 +15,7 @@ local MASON_ENSURED = {
   'rust-analyzer',
   'svelte-language-server',
   'tsc',
+  'vtsls',
   'vue-language-server',
 
   -- Markdown
@@ -206,6 +207,28 @@ return {
       },
     })
 
+    -- Vue: TypeScript 7 can't host `@vue/typescript-plugin` yet, so `.vue` files
+    -- get vtsls (TS 6) with the plugin, alongside vue_ls for the template/style
+    -- sections. vtsls serves `.vue` only; `.ts` stays on tsc. Setup follows
+    -- https://github.com/vuejs/language-tools/wiki/Neovim
+    vim.lsp.config('vtsls', {
+      filetypes = { 'vue' },
+      settings = {
+        vtsls = {
+          tsserver = {
+            globalPlugins = {
+              {
+                name = '@vue/typescript-plugin',
+                location = vim.fn.expand '$MASON/packages/vue-language-server/node_modules/@vue/language-server',
+                languages = { 'vue' },
+                configNamespace = 'typescript',
+              },
+            },
+          },
+        },
+      },
+    })
+
     -- Enable servers
     vim.lsp.enable {
       'astro',
@@ -221,7 +244,8 @@ return {
       'jsonls',
       'emmet_ls',
       'eslint',
-      'volar',
+      'vtsls',
+      'vue_ls',
     }
   end,
 }
