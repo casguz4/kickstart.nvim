@@ -10,7 +10,7 @@ vim.o.foldlevel = 99
 vim.o.foldlevelstart = 99
 vim.o.foldenable = true
 -- Native folding: LSP folding ranges when a server has them (set on LspAttach),
--- else treesitter (set when a parser starts), else indent.
+-- else treesitter (set when a parser starts), else indent. See custom/folding.lua.
 vim.o.foldmethod = 'indent'
 -- A closed fold shows its first line, highlighted.
 vim.o.foldtext = ''
@@ -611,10 +611,7 @@ require('lazy').setup({
 
           -- Syntax highlighting is provided by Neovim once a parser is started.
           -- Fold with treesitter (an LSP with folding ranges takes over on attach).
-          for _, win in ipairs(vim.fn.win_findbuf(args.buf)) do
-            vim.wo[win][0].foldmethod = 'expr'
-            vim.wo[win][0].foldexpr = 'v:lua.vim.treesitter.foldexpr()'
-          end
+          require('custom.folding').use_treesitter(args.buf)
 
           -- Indentation (provided by nvim-treesitter)
           vim.bo[args.buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
