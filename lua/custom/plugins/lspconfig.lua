@@ -127,16 +127,31 @@ return {
     -- Folding: a server with folding ranges takes over from treesitter/indent
     -- in every window showing the buffer, and closes the imports on open.
     local folding = vim.api.nvim_create_augroup('custom-lsp-folding', { clear = true })
+    local function use_lsp_folds(buf)
+      for _, win in ipairs(vim.fn.win_findbuf(buf)) do
+        vim.wo[win][0].foldmethod = 'expr'
+        vim.wo[win][0].foldexpr = 'v:lua.vim.lsp.foldexpr()'
+      end
+    end
     vim.api.nvim_create_autocmd('LspAttach', {
       group = folding,
       callback = function(args)
         local client = vim.lsp.get_client_by_id(args.data.client_id)
-        if not (client and client:supports_method('textDocument/foldingRange', args.buf)) then
-          return
+        if client and client:supports_method('textDocument/foldingRange', args.buf) then
+          use_lsp_folds(args.buf)
         end
-        for _, win in ipairs(vim.fn.win_findbuf(args.buf)) do
-          vim.wo[win][0].foldmethod = 'expr'
-          vim.wo[win][0].foldexpr = 'v:lua.vim.lsp.foldexpr()'
+      end,
+    })
+    -- A server that attached while the buffer was in no window set nothing, so
+    -- the window it is shown in next still has the treesitter/indent folds.
+    vim.api.nvim_create_autocmd('BufWinEnter', {
+      group = folding,
+      callback = function(args)
+        for _, client in ipairs(vim.lsp.get_clients { bufnr = args.buf }) do
+          if client:supports_method('textDocument/foldingRange', args.buf) then
+            use_lsp_folds(args.buf)
+            return
+          end
         end
       end,
     })

@@ -20,6 +20,21 @@ h.test('folding: an LSP buffer folds with the LSP foldexpr', function()
   h.eq(h.opt('foldexpr', buf), LSP_FOLDEXPR, 'foldexpr in src/index.ts')
 end)
 
+h.test('folding: a server that attaches while the buffer is hidden still folds with LSP once shown', function()
+  h.expect_servers('src/index.ts', { includes = { 'tsc' } })
+  local path = h.sibling_copy 'src/folds.ts'
+  -- Hide the new buffer in the same tick, before tsc attaches to it.
+  local buf = h.open(path)
+  h.open(vim.fn.tempname() .. '.txt')
+  h.eq(vim.fn.bufwinid(buf), -1, 'the copy is still shown in a window')
+  local attached = vim.wait(FOLD_TIMEOUT_MS, function()
+    return vim.list_contains(h.servers(buf), 'tsc')
+  end, 50)
+  h.ok(attached, 'tsc did not attach to the hidden copy')
+  h.open(path)
+  h.eq(h.opt('foldexpr', buf), LSP_FOLDEXPR, 'foldexpr in the copy once shown')
+end)
+
 h.test('folding: a buffer with only a parser folds with treesitter', function()
   -- No server is configured for TOML; nvim-treesitter has its parser.
   h.expect_servers('stylua.toml', {})
