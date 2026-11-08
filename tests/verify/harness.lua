@@ -227,6 +227,77 @@ function h.expect_servers(rel, want)
   end
 end
 
+-- [[ Requests ]]
+
+-- Servers answer empty while they load the project; how long to keep re-asking,
+-- and how long each single request may take.
+local REQUEST_UNTIL_MS = 20000
+local REQUEST_MS = 5000
+local RETRY_MS = 500
+
+---The first position of `text` in `buf`, as an LSP position (0-based).
+---@param buf integer
+---@param text string plain text, not a pattern
+---@return lsp.Position
+function h.position_of(buf, text)
+  for i, line in ipairs(vim.api.nvim_buf_get_lines(buf, 0, -1, false)) do
+    local col = line:find(text, 1, true)
+    if col then
+      return { line = i - 1, character = col - 1 }
+    end
+  end
+  error(string.format('`%s` not found in buffer %d', text, buf), 2)
+end
+
+-- Hover `contents` as text. vtsls sends a bare MarkedString; most servers send
+-- MarkupContent; the spec also allows a MarkedString list.
+local function hover_text(contents)
+  if type(contents) == 'string' then
+    return contents
+  end
+  if contents.value then
+    return contents.value
+  end
+  return table.concat(
+    vim.tbl_map(function(c)
+      return type(c) == 'string' and c or c.value
+    end, contents),
+    '\n'
+  )
+end
+
+---Ask the `server` client attached to `buf` for hover text at `pos`, re-asking
+---until `done(text)` returns true or the budget runs out. Sends one request at
+---a time: requesting from inside a vim.wait predicate floods a server that
+---answers instantly, and the wait never returns.
+---@param buf integer
+---@param server string client name, e.g. 'vtsls'
+---@param pos lsp.Position
+---@param done fun(text: string): boolean
+---@return boolean ok, string text the last hover text ('' when empty)
+function h.hover_until(buf, server, pos, done)
+  local client = vim.lsp.get_clients({ bufnr = buf, name = server })[1]
+  assert(client, server .. ' is not attached to buffer ' .. buf)
+  local params = { textDocument = { uri = vim.uri_from_bufnr(buf) }, position = pos }
+
+  local text, deadline = '', vim.uv.now() + REQUEST_UNTIL_MS
+  repeat
+    local answered = false
+    client:request('textDocument/hover', params, function(_, result)
+      text = result and result.contents and hover_text(result.contents) or ''
+      answered = true
+    end, buf)
+    vim.wait(REQUEST_MS, function()
+      return answered
+    end, 50)
+    if done(text) then
+      return true, text
+    end
+    vim.wait(RETRY_MS)
+  until vim.uv.now() > deadline
+  return false, text
+end
+
 -- [[ Keymaps & options ]]
 
 ---The mapping that answers `lhs` in `mode`, as `maparg(..., true)` describes it

@@ -12,6 +12,10 @@ tests/verify.sh              # everything
 tests/verify.sh servers:     # only tests whose name contains "servers:"
 ```
 
+The pre-commit hook in `.githooks/` runs it (plus `stylua --check`) whenever a
+commit touches the config or `tests/`. Enable it once per clone with
+`git config core.hooksPath .githooks`.
+
 It prints `ok` / `FAIL` / `skip` per test, then the failure messages. The exit
 code is `0` when nothing failed, `1` when a test failed, `2` on timeout and `3`
 when the harness itself crashed. Nvim's stderr is printed only when the run
@@ -69,6 +73,8 @@ Assert behavior, never how a plugin spec or module is laid out.
 | `h.open(rel)`                                   | Edit a fixture file; returns the buffer.                                                                                                  |
 | `h.servers(buf)`                                | Sorted names of the clients attached to a buffer.                                                                                         |
 | `h.expect_servers(rel, { includes, excludes })` | Open a fixture file, wait for `includes` to attach, fail on missing or `excludes`. Skips when an `includes` binary isn't installed.       |
+| `h.position_of(buf, text)`                      | The LSP position (0-based) of the first occurrence of `text` in `buf`, so specs don't hardcode line/column.                               |
+| `h.hover_until(buf, server, pos, done)`         | Hover from one attached server, re-asked one request at a time until `done(text)` holds; returns `ok, text`. Use it for every hover.      |
 | `h.map(mode, lhs, buf?)`                        | `maparg()` details for whatever answers `lhs` (buffer-local maps count when `buf` is given), or `nil`.                                    |
 | `h.opt(name, buf?)`                             | An option's global value, or its value in `buf` (window options read from its window).                                                    |
 
