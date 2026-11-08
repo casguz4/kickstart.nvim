@@ -150,16 +150,39 @@ local ATTACH_TIMEOUT_MS = 20000
 -- shouldn't.
 local SETTLE_MS = 1500
 
+-- When each buffer was created or last had a server attach or detach. A buffer
+-- whose servers have been stable for SETTLE_MS has been watched long enough, so
+-- a later check on it needn't wait again.
+local last_change = {}
+vim.api.nvim_create_autocmd({ 'BufNew', 'LspAttach', 'LspDetach' }, {
+  group = vim.api.nvim_create_augroup('verify-harness-settle', { clear = true }),
+  callback = function(ev)
+    last_change[ev.buf] = vim.uv.now()
+  end,
+})
+
+-- Wait until `buf`'s servers have gone SETTLE_MS without changing.
+local function settle(buf)
+  vim.wait(ATTACH_TIMEOUT_MS, function()
+    return vim.uv.now() >= (last_change[buf] or 0) + SETTLE_MS
+  end, 50)
+end
+
 -- A fixture path relative to tests/fixture, or an absolute path as is.
 local function fixture_path(rel)
   return rel:sub(1, 1) == '/' and rel or h.fixture .. '/' .. rel
 end
 
----Edit a fixture file in the current window.
+---Edit a fixture file in the current window. A file already in the current
+---window is left as it is: `:edit` would re-read it, and its servers would
+---detach and attach again.
 ---@param rel string path relative to tests/fixture, e.g. 'src/index.ts', or an absolute path
 ---@return integer bufnr
 function h.open(rel)
-  vim.cmd.edit(vim.fn.fnameescape(fixture_path(rel)))
+  local path = vim.fn.fnamemodify(fixture_path(rel), ':p')
+  if vim.api.nvim_buf_get_name(0) ~= path then
+    vim.cmd.edit(vim.fn.fnameescape(path))
+  end
   return vim.api.nvim_get_current_buf()
 end
 
@@ -261,7 +284,7 @@ function h.expect_servers(rel, want)
   vim.wait(ATTACH_TIMEOUT_MS, function()
     return #not_in(includes, h.servers(buf)) == 0
   end, 50)
-  vim.wait(SETTLE_MS)
+  settle(buf)
 
   local attached = h.servers(buf)
   local missing, unexpected = not_in(includes, attached), {}

@@ -86,6 +86,12 @@ Assert behavior, never how a plugin spec or module is laid out.
 | `h.key_group(lhs, mode?)`                       | The which-key group label at `lhs` (e.g. `'[S]earch'`), or `nil`. Counts a declared group that has no keys under it yet.                                |
 | `h.opt(name, buf?)`                             | An option's global value, or its value in `buf` (window options read from its window).                                                                    |
 
+`h.expect_servers` watches for servers that shouldn't attach until the buffer's
+servers have held still for 1.5s. It does that once per buffer, so checking an
+already-settled buffer again doesn't wait. `h.open` leaves a file that is already
+in the current window alone: `:edit` would re-read it, and its servers would
+detach and attach again.
+
 ## Fixture
 
 `fixture/` has `src/index.ts` (with `eslint.config.js`), `src/App.vue`,

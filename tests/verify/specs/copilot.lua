@@ -6,6 +6,10 @@ local h = ...
 
 local SETTLE_MS = 1500
 local START_MS = 20000
+-- vim.lsp.enable decides every open buffer in one pass and schedules each
+-- start in that same tick, so once one buffer has the client, any other start
+-- has already run. This only gives a stray start a few loop turns to show.
+local SIBLING_MS = 250
 
 -- The server these tests start is never signed in: it runs with an empty home
 -- and config dirs and without the shell's GitHub/Copilot tokens, so it finds no
@@ -79,7 +83,6 @@ end)
 h.test('copilot: <leader>tc attaches it to .ts, a second <leader>tc detaches it', function()
   skip_unless_installed()
   local buf = h.open 'src/index.ts'
-  vim.wait(SETTLE_MS)
   h.eq(#copilot_clients(), 0, 'copilot clients before <leader>tc')
 
   with_copilot_on(function()
@@ -150,7 +153,7 @@ for _, case in ipairs(excluded_buffers()) do
         return #copilot_clients(ts) == 1
       end, 50)
       h.ok(attached, 'copilot did not attach to src/index.ts, so the check proves nothing')
-      vim.wait(SETTLE_MS)
+      vim.wait(SIBLING_MS)
       h.eq(#copilot_clients(buf), 0, 'copilot clients on ' .. case.label)
     end)
 
