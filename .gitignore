@@ -5,3 +5,4 @@ nvim
 
 spell/
 tests/fixture/node_modules
+tests/fixture/**/*.saved.*

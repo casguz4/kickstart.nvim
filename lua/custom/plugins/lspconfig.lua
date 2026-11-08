@@ -27,6 +27,7 @@ local MASON_ENSURED = {
   -- Formatters
   'prettier',
   'prettierd',
+  'stylua',
 
   -- Debuggers for frontend
   'js-debug-adapter',
@@ -177,6 +178,26 @@ return {
     -- Default settings for all LSP configs loaded from runtimepath (including nvim-lspconfig's `lsp/*.lua`).
     vim.lsp.config('*', { capabilities = capabilities })
 
+    -- Formatting belongs to Prettier (through conform) and stylua, so no other
+    -- server may format: conform's `lsp_format = 'prefer'` would pick it over
+    -- Prettier. Servers with a setting that stops them advertising formatting
+    -- use it (below); the rest drop their formatting capabilities here. vue_ls
+    -- formats .vue too, and Prettier owns .vue.
+    local function no_formatting(client)
+      client.server_capabilities.documentFormattingProvider = false
+      client.server_capabilities.documentRangeFormattingProvider = false
+    end
+    for _, name in ipairs { 'tsc', 'vtsls', 'vue_ls', 'rumdl' } do
+      vim.lsp.config(name, { on_init = no_formatting })
+    end
+    vim.lsp.config('eslint', { settings = { format = false } })
+    for _, name in ipairs { 'cssls', 'html', 'jsonls' } do
+      vim.lsp.config(name, { init_options = { provideFormatter = false } })
+    end
+    -- yamlls: lspconfig turns its formatter on and forces the capability on in
+    -- `on_init`; replace both.
+    vim.lsp.config('yamlls', { settings = { yaml = { format = { enable = false } } }, on_init = no_formatting })
+
     -- Per-server overrides (stays "native" via vim.lsp.config)
     vim.lsp.config('bashls', {
       filetypes = { 'bash', 'sh', 'zsh' },
@@ -230,8 +251,24 @@ return {
 
     -- Diagnostics come only from language servers (no nvim-lint). eslint and
     -- stylelint_lsp attach only where the project has an ESLint/Stylelint config.
-    -- stylelint lints css/postcss by default; add scss and less.
+    -- eslint also needs ESLint installed (`node_modules/eslint` above the
+    -- buffer): with only a config it can't lint or fix, so it doesn't attach.
+    local eslint_root_dir = vim.lsp.config.eslint.root_dir
+    vim.lsp.config('eslint', {
+      root_dir = function(bufnr, on_dir)
+        for dir in vim.fs.parents(vim.api.nvim_buf_get_name(bufnr)) do
+          if vim.uv.fs_stat(dir .. '/node_modules/eslint') then
+            return eslint_root_dir(bufnr, on_dir)
+          end
+        end
+      end,
+    })
+
+    -- stylelint lints css/postcss by default; add scss and less. It attaches to
+    -- those filetypes only: lspconfig's list also has html/vue/astro, which
+    -- `validate` doesn't cover, so it would attach there and check nothing.
     vim.lsp.config('stylelint_lsp', {
+      filetypes = { 'css', 'scss', 'less' },
       settings = {
         stylelint = { validate = { 'css', 'postcss', 'scss', 'less' } },
       },
@@ -270,6 +307,7 @@ return {
     vim.lsp.enable {
       'astro',
       'lua_ls',
+      'stylua',
       'gopls',
       'clangd',
       'rust_analyzer',

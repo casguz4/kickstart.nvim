@@ -20,7 +20,7 @@ if [ "${#lua_files[@]}" -gt 0 ]; then
     echo "pre-commit: stylua not found; install it with :MasonInstall stylua" >&2
     exit 1
   fi
-  if ! "$STYLUA" --check "${lua_files[@]}"; then
+  if ! "$STYLUA" --check --respect-ignores "${lua_files[@]}"; then
     echo "pre-commit: stylua found unformatted files (above); run stylua on them" >&2
     exit 1
   fi

@@ -45,6 +45,7 @@ local function run()
   for _, t in ipairs(h._tests()) do
     if filter == '' or t.name:find(filter, 1, true) then
       local ok, err = pcall(t.fn)
+      h._cleanup()
       if ok then
         counts.pass = counts.pass + 1
         out('  ok    ' .. t.name)

@@ -4,10 +4,13 @@ local h = ...
 -- 0.11 config and stay attached after the migration. Migration tickets add the
 -- servers they route in (`includes`) and the ones they route out (`excludes`).
 local cases = {
-  { file = 'lua/sample.lua', includes = { 'lua_ls' } },
+  { file = 'lua/sample.lua', includes = { 'lua_ls', 'stylua' } },
   { file = 'src/index.ts', includes = { 'tsc', 'eslint' }, excludes = { 'ts_ls', 'tsgo', 'vtsls' } },
-  { file = 'src/App.vue', includes = { 'vtsls', 'vue_ls' }, excludes = { 'tsc' } },
+  { file = 'src/App.vue', includes = { 'vtsls', 'vue_ls' }, excludes = { 'tsc', 'stylelint_lsp' } },
   { file = 'src/styles.css', includes = { 'cssls', 'stylelint_lsp' } },
+  -- stylelint_lsp lints only css/scss/less, so it stays off markup with <style>.
+  { file = 'src/index.html', includes = { 'html' }, excludes = { 'stylelint_lsp' } },
+  { file = 'src/Page.astro', includes = { 'astro' }, excludes = { 'stylelint_lsp' } },
   { file = 'data/settings.json', includes = { 'jsonls' } },
   { file = 'data/settings.yaml', includes = { 'yamlls' } },
   { file = 'notes.md', includes = { 'rumdl', 'marksman' } },
@@ -23,3 +26,14 @@ for _, case in ipairs(cases) do
     h.expect_servers(case.file, case)
   end)
 end
+
+-- eslint attaches only where it can lint: an ESLint config *and* ESLint
+-- installed. A project with only the config gets no eslint server.
+h.test('servers: .ts with an ESLint config but no installed eslint does not attach eslint', function()
+  local dir = vim.fn.tempname()
+  vim.fn.mkdir(dir .. '/src', 'p')
+  vim.fn.writefile({ '{ "name": "no-eslint", "private": true }' }, dir .. '/package.json')
+  vim.fn.writefile({ 'export default []' }, dir .. '/eslint.config.js')
+  vim.fn.writefile({ 'export const n = 1' }, dir .. '/src/index.ts')
+  h.expect_servers(dir .. '/src/index.ts', { includes = { 'tsc' }, excludes = { 'eslint' } })
+end)

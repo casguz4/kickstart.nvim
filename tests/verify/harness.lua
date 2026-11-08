@@ -178,6 +178,42 @@ function h.copy_fixture(rel)
   return path
 end
 
+local sibling_copies = {}
+
+---Copy a fixture file next to itself as `<name>.saved.<ext>` and return the
+---copy's absolute path. The copy stays in the fixture project, so its configs,
+---servers and `node_modules` apply: saving it runs the real save pipeline
+---without touching the original. Deleted (buffer and file) when the test ends;
+---gitignored in case a run is cut short.
+---@param rel string path relative to tests/fixture
+---@return string path
+function h.sibling_copy(rel)
+  local src = fixture_path(rel)
+  local path = src:gsub('(%.%w+)$', '.saved%1')
+  vim.fn.writefile(vim.fn.readfile(src, 'b'), path, 'b')
+  table.insert(sibling_copies, path)
+  return path
+end
+
+---Delete the test's `h.sibling_copy` files. Called by the runner after each test.
+function h._cleanup()
+  for _, path in ipairs(sibling_copies) do
+    local buf = vim.fn.bufnr(path)
+    if buf ~= -1 then
+      vim.api.nvim_buf_delete(buf, { force = true })
+    end
+    vim.fn.delete(path)
+  end
+  sibling_copies = {}
+end
+
+---The lines of a file under tests/verify/expected.
+---@param name string e.g. 'messy.ts'
+---@return string[]
+function h.expected(name)
+  return vim.fn.readfile(h.repo .. '/tests/verify/expected/' .. name)
+end
+
 ---Names of the language servers attached to a buffer, sorted.
 ---@param buf integer
 ---@return string[]

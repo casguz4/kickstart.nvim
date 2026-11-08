@@ -1,0 +1,3 @@
+# Intentionally unformatted fixture for the save checks (its .saved. copy is
+# formatted by the stylua server, which honors this file, so it is not listed).
+tests/fixture/lua/messy.lua

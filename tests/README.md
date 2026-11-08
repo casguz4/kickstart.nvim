@@ -12,7 +12,7 @@ tests/verify.sh              # everything
 tests/verify.sh servers:     # only tests whose name contains "servers:"
 ```
 
-The pre-commit hook in `.githooks/` runs it (plus `stylua --check`) whenever a
+The pre-commit hook in `.githooks/` runs it (plus `stylua --check --respect-ignores`) whenever a
 commit touches the config or `tests/`. Enable it once per clone with
 `git config core.hooksPath .githooks`.
 
@@ -47,6 +47,7 @@ schema they validate against. Offline they fail, not skip.
 | `verify/run.lua`     | Boots, loads every spec, runs it, reports, exits.                    |
 | `verify/harness.lua` | The helpers specs use (below).                                       |
 | `verify/specs/*.lua` | The tests, one file per area. Loaded alphabetically.                 |
+| `verify/expected/`   | Hand-written files a saved fixture must match (the `save:` tests).   |
 | `fixture/`           | A small project: one file per filetype the config routes.            |
 
 ## Writing tests
@@ -75,6 +76,8 @@ Assert behavior, never how a plugin spec or module is laid out.
 | `h.plugin(name)`                                | The lazy.nvim registry entry for a plugin (loaded or not), or `nil`.                                                                                      |
 | `h.open(rel)`                                   | Edit a fixture file (or an absolute path); returns the buffer.                                                                                            |
 | `h.copy_fixture(rel)`                           | Copy a fixture file into a temp dir with no `.dir` in its path; returns the copy's path. yamlls applies no schema under a dot-directory.                  |
+| `h.sibling_copy(rel)`                           | Copy a fixture file next to itself as `<name>.saved.<ext>`, so saving it runs in the fixture project; returns its path. Deleted after the test.          |
+| `h.expected(name)`                              | The lines of `verify/expected/<name>`, to compare a saved file with.                                                                                      |
 | `h.servers(buf)`                                | Sorted names of the clients attached to a buffer.                                                                                                         |
 | `h.expect_servers(rel, { includes, excludes })` | Open a fixture file (or an absolute path), wait for `includes` to attach, fail on missing or `excludes`. Skips when an `includes` binary isn't installed. |
 | `h.position_of(buf, text)`                      | The LSP position (0-based) of the first occurrence of `text` in `buf`, so specs don't hardcode line/column.                                               |
@@ -86,10 +89,14 @@ Assert behavior, never how a plugin spec or module is laid out.
 
 `fixture/` has `src/index.ts` (with `eslint.config.js`), `src/App.vue`,
 `src/styles.css` (with `.stylelintrc.json`, which has no rules: `stylelint_lsp`
-attaches only where a Stylelint config exists), `data/settings.json`,
-`data/settings.yaml`, `notes.md` and `lua/sample.lua`, plus `src/messy.ts`.
-That file is intentionally unformatted, with an unused import and a fixable
-ESLint issue, for the fix-on-save checks. Don't format it. In `src/index.ts`,
+attaches only where a Stylelint config exists), `src/index.html` and
+`src/Page.astro` (markup with a `<style>` block, which `stylelint_lsp` must not
+attach to), `data/settings.json`, `data/settings.yaml`, `notes.md` and
+`lua/sample.lua`, plus `src/messy.ts` and `lua/messy.lua`. Those two are
+intentionally unformatted (`messy.ts` also has an unused import and a fixable
+ESLint issue) for the `save:` checks, which save a `h.sibling_copy` and compare
+it with `verify/expected/`. Don't format them; `.styluaignore` keeps
+`stylua --check` off `messy.lua`. In `src/index.ts`,
 `greet(visitor)` passes a variable on purpose: the hints check needs a
 non-literal argument, so don't change it to a literal.
 In `src/App.vue`, `label` is a string literal on purpose: the Vue-plugin check
