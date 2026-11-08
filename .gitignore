@@ -4,3 +4,4 @@ test.sh
 nvim
 
 spell/
+tests/fixture/node_modules
