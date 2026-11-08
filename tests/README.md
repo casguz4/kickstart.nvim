@@ -77,7 +77,8 @@ Assert behavior, never how a plugin spec or module is laid out.
 `src/styles.css`, `data/settings.json`, `data/settings.yaml`, `notes.md` and
 `lua/sample.lua`, plus `src/messy.ts`. That file is intentionally unformatted,
 with an unused import and a fixable ESLint issue, for the fix-on-save checks.
-Don't format it.
+Don't format it. In `src/index.ts`, `greet(visitor)` passes a variable on purpose:
+the hints check needs a non-literal argument, so don't change it to a literal.
 
 ESLint needs its packages to lint (`npm install` inside `fixture/`, and
 `node_modules` is gitignored). The `eslint` server attaches without them.

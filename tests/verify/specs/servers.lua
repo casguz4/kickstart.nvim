@@ -5,7 +5,7 @@ local h = ...
 -- servers they route in (`includes`) and the ones they route out (`excludes`).
 local cases = {
   { file = 'lua/sample.lua', includes = { 'lua_ls' } },
-  { file = 'src/index.ts', includes = { 'eslint' } },
+  { file = 'src/index.ts', includes = { 'tsc', 'eslint' }, excludes = { 'ts_ls', 'tsgo' } },
   { file = 'src/styles.css', includes = { 'cssls' } },
   { file = 'data/settings.json', includes = { 'jsonls' } },
 }

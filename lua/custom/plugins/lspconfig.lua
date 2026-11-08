@@ -14,7 +14,7 @@ local MASON_ENSURED = {
   'lua-language-server',
   'rust-analyzer',
   'svelte-language-server',
-  'typescript-language-server',
+  'tsc',
   'vue-language-server',
 
   -- Markdown
@@ -41,17 +41,6 @@ local function MasonInstallAll()
     vim.cmd('MasonInstall ' .. table.concat(MASON_ENSURED, ' '))
   end
 end
-
-local ts_inlay_hints = {
-  includeInlayVariableTypeHints = true,
-  includeInlayParameterNameHints = 'all',
-  includeInlayEnumMemberValueHints = true,
-  includeInlayFunctionParameterTypeHints = true,
-  includeInlayFunctionLikeReturnTypeHints = true,
-  includeInlayPropertyDeclarationTypeHints = true,
-  includeInlayVariableTypeHintsWhenTypeMatchesName = false,
-  includeInlayParameterNameHintsWhenArgumentMatchesName = false,
-}
 
 return {
   -- Main LSP Configuration (uses Neovim 0.11+ native `vim.lsp.config()` + `vim.lsp.enable()`)
@@ -211,16 +200,15 @@ return {
       },
     })
 
-    vim.lsp.config('ts_ls', {
+    -- TypeScript 7 (`tsc --lsp`) serves JS/TS. Name hints for every argument,
+    -- not just literals; everything else stays on lspconfig's `tsc` defaults.
+    vim.lsp.config('tsc', {
       settings = {
-        javascript = { inlayHints = ts_inlay_hints },
-        typescript = { inlayHints = ts_inlay_hints },
+        ['js/ts'] = { inlayHints = { parameterNames = { enabled = 'all' } } },
       },
     })
 
     -- Enable servers
-    local ts_server = (vim.env.TSGOPATH and vim.env.TSGOPATH ~= '') and 'tsgo' or 'ts_ls'
-
     vim.lsp.enable {
       'astro',
       'lua_ls',
@@ -228,7 +216,7 @@ return {
       'clangd',
       'rust_analyzer',
       'svelte',
-      ts_server,
+      'tsc',
       'bashls',
       'html',
       'cssls',
