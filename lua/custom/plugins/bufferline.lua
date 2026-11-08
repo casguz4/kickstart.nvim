@@ -1,14 +1,14 @@
 return {
   'akinsho/bufferline.nvim',
-  version = "*",
+  version = '*',
   dependencies = 'nvim-tree/nvim-web-devicons',
   config = function()
     require('bufferline').setup {
       options = {
-        numbers = "none", -- | "ordinal" | "buffer_id" | "both" | function({ ordinal, id, lower, raise }): string,
-        close_command = "bdelete! %d",
-        right_mouse_command = "bdelete! %d",
-        left_mouse_command = "buffer %d",
+        numbers = 'none', -- | "ordinal" | "buffer_id" | "both" | function({ ordinal, id, lower, raise }): string,
+        close_command = 'bdelete! %d',
+        right_mouse_command = 'bdelete! %d',
+        left_mouse_command = 'buffer %d',
         middle_mouse_command = nil,
         indicator = {
           icon = '▎', -- this should be omitted if indicator style is not 'icon'
@@ -23,15 +23,15 @@ return {
         max_prefix_length = 30,
         truncate_names = true,
         tab_size = 21,
-        diagnostics = "nvim_lsp",
+        diagnostics = 'nvim_lsp',
         diagnostics_update_in_insert = false,
         offsets = {
           {
-            filetype = "NvimTree",
-            text = "File Explorer",
-            text_align = "left",
-            separator = true
-          }
+            filetype = 'NvimTree',
+            text = 'File Explorer',
+            text_align = 'left',
+            separator = true,
+          },
         },
         color_icons = true,
         show_buffer_icons = true,
@@ -40,10 +40,10 @@ return {
         show_tab_indicators = true,
         show_duplicate_prefix = true,
         persist_buffer_sort = true,
-        separator_style = "slant",
+        separator_style = 'slant',
         enforce_regular_tabs = true,
         always_show_bufferline = true,
-      }
+      },
     }
-  end
+  end,
 }

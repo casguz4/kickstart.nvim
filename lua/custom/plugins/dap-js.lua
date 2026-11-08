@@ -5,7 +5,7 @@ return {
     'nvim-neotest/nvim-nio',
   },
   config = function()
-    local dap = require('dap')
+    local dap = require 'dap'
 
     -- JavaScript/TypeScript Debug Adapter Configuration
     dap.adapters['pwa-node'] = {
@@ -15,8 +15,7 @@ return {
       executable = {
         command = 'node',
         args = {
-          require('mason-registry').get_package('js-debug-adapter'):get_install_path()
-            .. '/js-debug/src/dapDebugServer.js',
+          require('mason-registry').get_package('js-debug-adapter'):get_install_path() .. '/js-debug/src/dapDebugServer.js',
           '${port}',
         },
       },
@@ -29,8 +28,7 @@ return {
       executable = {
         command = 'node',
         args = {
-          require('mason-registry').get_package('js-debug-adapter'):get_install_path()
-            .. '/js-debug/src/dapDebugServer.js',
+          require('mason-registry').get_package('js-debug-adapter'):get_install_path() .. '/js-debug/src/dapDebugServer.js',
           '${port}',
         },
       },

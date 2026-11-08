@@ -20,7 +20,7 @@ return {
     opts = {
       -- See Configuration section for options
       sticky = {
-        "#buffer:`current`",
+        '#buffer:`current`',
       },
     },
   },

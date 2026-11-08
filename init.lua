@@ -522,7 +522,7 @@ require('lazy').setup({
       -- - gsaiw) - [S]urround [A]dd [I]nner [W]ord [)]Paren
       -- - gsd'   - [S]urround [D]elete [']quotes
       -- - gsr)'  - [S]urround [R]eplace [)] [']
-      require('mini.surround').setup({
+      require('mini.surround').setup {
         mappings = {
           add = 'gsa',
           delete = 'gsd',
@@ -531,7 +531,7 @@ require('lazy').setup({
           find_left = 'gsF',
           highlight = 'gsh',
         },
-      })
+      }
 
       -- Simple and easy statusline.
       --  You could remove this setup call if you don't like it,

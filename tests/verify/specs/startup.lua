@@ -27,16 +27,12 @@ h.test('startup: :checkhealth vim.deprecated has nothing from this config', func
   -- Most deprecated calls sit on the LSP attach path; make sure it has run.
   h.expect_servers('lua/sample.lua', { includes = { 'lua_ls' } })
   local ours = vim.tbl_filter(from_config, h.checkhealth_problems 'vim.deprecated')
-  h.ok(
-    #ours == 0,
-    'deprecated calls from this config:\n'
-      .. table.concat(
-        vim.tbl_map(function(p)
-          return p.text .. '\n  ' .. table.concat(p.detail, '\n  ')
-        end, ours),
-        '\n'
-      )
-  )
+  h.ok(#ours == 0, 'deprecated calls from this config:\n' .. table.concat(
+    vim.tbl_map(function(p)
+      return p.text .. '\n  ' .. table.concat(p.detail, '\n  ')
+    end, ours),
+    '\n'
+  ))
 end)
 
 -- Errors from any source, plugins included. For vim.deprecated this is the
