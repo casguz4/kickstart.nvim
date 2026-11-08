@@ -537,6 +537,15 @@ require('lazy').setup({
         return '%2l:%-2v'
       end
 
+      -- LSP progress (fed by the LspProgress autocmd in lspconfig.lua), shown
+      -- before the file info. Wraps the default fileinfo section so the rest of
+      -- mini's default layout stays as is.
+      local section_fileinfo = statusline.section_fileinfo
+      ---@diagnostic disable-next-line: duplicate-set-field
+      statusline.section_fileinfo = function(args)
+        return vim.ui.progress_status() .. section_fileinfo(args)
+      end
+
       -- ... and there is more!
       --  Check out: https://github.com/nvim-mini/mini.nvim
     end,

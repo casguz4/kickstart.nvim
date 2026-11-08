@@ -12,7 +12,6 @@ local present = {
   'conform.nvim',
   'copilot.vim',
   'dashboard-nvim',
-  'fidget.nvim',
   'friendly-snippets',
   'fzf-lua',
   'gitsigns.nvim',
@@ -43,6 +42,7 @@ local present = {
 }
 
 local absent = {
+  'fidget.nvim',
   'nvim-lint',
 }
 

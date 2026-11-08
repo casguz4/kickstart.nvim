@@ -108,9 +108,6 @@ return {
     -- JSON/YAML schemas for jsonls and yamlls.
     'b0o/SchemaStore.nvim',
 
-    -- Useful status updates for LSP.
-    { 'j-hui/fidget.nvim', opts = {} },
-
     -- Allows extra capabilities provided by blink.cmp
     'saghen/blink.cmp',
   },
@@ -130,11 +127,35 @@ return {
           [vim.diagnostic.severity.HINT] = '󰌶 ',
         },
       } or {},
+      -- Full message under the cursor line, one-line virtual text elsewhere.
+      virtual_lines = { current_line = true },
       virtual_text = {
         source = 'if_many',
         spacing = 2,
+        current_line = false,
       },
     }
+
+    -- LSP progress as progress messages: shown in the cmdline
+    -- (`messagesopt` progress:c) and counted by vim.ui.progress_status(),
+    -- which the statusline shows. See :help LspProgress.
+    vim.api.nvim_create_autocmd('LspProgress', {
+      group = vim.api.nvim_create_augroup('custom-lsp-progress', { clear = true }),
+      callback = function(ev)
+        local value = ev.data.params.value
+        if type(value) ~= 'table' or not value.kind then
+          return -- not work-done progress (e.g. partial results)
+        end
+        vim.api.nvim_echo({ { value.message or 'done' } }, false, {
+          id = 'lsp.' .. ev.data.params.token,
+          kind = 'progress',
+          source = 'vim.lsp',
+          title = value.title,
+          status = value.kind ~= 'end' and 'running' or 'success',
+          percent = value.percentage,
+        })
+      end,
+    })
 
     -- Keymaps + buffer-local LSP settings
     vim.api.nvim_create_autocmd('LspAttach', {
