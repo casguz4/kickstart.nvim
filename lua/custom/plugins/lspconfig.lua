@@ -148,11 +148,8 @@ return {
 
         map('n', 'gd', vim.lsp.buf.definition, 'LSP: Go to definition')
         map('n', 'gD', vim.lsp.buf.declaration, 'LSP: Go to declaration')
-        map('n', 'gI', vim.lsp.buf.implementation, 'LSP: Go to implementation')
-        map('n', 'gr', vim.lsp.buf.references, 'LSP: References')
-        map('n', 'K', vim.lsp.buf.hover, 'LSP: Hover')
-        map('n', '<leader>rn', vim.lsp.buf.rename, 'LSP: Rename')
-        map({ 'n', 'v' }, '<leader>ca', vim.lsp.buf.code_action, 'LSP: Code action')
+        -- References, implementation, rename, code action, hover etc. use the
+        -- 0.12 defaults: grr, gri, grn, gra, grt, grx, gO, K, insert <C-S>.
         map('n', '<leader>e', vim.diagnostic.open_float, 'Diagnostics: Float')
 
         local client_id = args.data and args.data.client_id

@@ -83,6 +83,7 @@ Assert behavior, never how a plugin spec or module is laid out.
 | `h.position_of(buf, text)`                      | The LSP position (0-based) of the first occurrence of `text` in `buf`, so specs don't hardcode line/column.                                               |
 | `h.hover_until(buf, server, pos, done)`         | Hover from one attached server, re-asked one request at a time until `done(text)` holds; returns `ok, text`. Use it for every hover.                      |
 | `h.map(mode, lhs, buf?)`                        | `maparg()` details for whatever answers `lhs` (buffer-local maps count when `buf` is given), or `nil`.                                                    |
+| `h.key_group(lhs, mode?)`                       | The which-key group label at `lhs` (e.g. `'[S]earch'`), or `nil`. Counts a declared group that has no keys under it yet.                                |
 | `h.opt(name, buf?)`                             | An option's global value, or its value in `buf` (window options read from its window).                                                                    |
 
 ## Fixture

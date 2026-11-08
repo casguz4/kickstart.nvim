@@ -89,7 +89,7 @@ vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 vim.keymap.set('n', '<leader>w', '<cmd>w<CR>', { desc = 'Save file' })
 vim.keymap.set('n', '<leader>W', '<cmd>wa<CR>', { desc = 'Save all files' })
 vim.keymap.set('n', '<leader>Q', '<cmd>qa<CR>', { desc = 'Quit all files' })
-vim.keymap.set('n', '<leader>S', '<cmd>qa<CR>', { desc = 'Save & Quit all files' })
+vim.keymap.set('n', '<leader>S', '<cmd>wqa<CR>', { desc = 'Save & Quit all files' })
 
 -- Diagnostic keymaps
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
@@ -284,6 +284,8 @@ require('lazy').setup({
       spec = {
         { '<leader>s', group = '[S]earch' },
         { '<leader>t', group = '[T]oggle' },
+        { '<leader>b', group = '[B]uffer' },
+        { '<leader>d', group = '[D]ebug' },
         { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } },
       },
     },
@@ -337,7 +339,7 @@ require('lazy').setup({
     keys = {
       { '<leader>sh', '<cmd>FzfLua helptags<CR>', desc = '[S]earch [H]elp' },
       { '<leader>sk', '<cmd>FzfLua keymaps<CR>', desc = '[S]earch [K]eymaps' },
-      { '<leader>b', '<cmd>FzfLua buffers<CR>', desc = '[B]uffers' },
+      { '<leader>sb', '<cmd>FzfLua buffers<CR>', desc = '[S]earch [B]uffers' },
       { '<leader>ss', '<cmd>FzfLua<CR>', desc = '[S]earch [S]elect FzfLua' },
       { '<leader>sw', '<cmd>FzfLua grep_cword<CR>', desc = '[S]earch current [W]ord' },
       { '<leader>g', '<cmd>FzfLua live_grep<CR>', desc = 'search by [G]rep' },
@@ -498,9 +500,15 @@ require('lazy').setup({
       --
       -- Examples:
       --  - va)  - [V]isually select [A]round [)]paren
-      --  - yinq - [Y]ank [I]nside [N]ext [Q]uote
+      --  - yiNq - [Y]ank [I]nside [N]ext [Q]uote
       --  - ci'  - [C]hange [I]nside [']quote
-      require('mini.ai').setup { n_lines = 500 }
+      --
+      -- "next" lives on aN/iN so 0.12's an/in (and ]n/[n) incremental
+      -- selection keeps its keys.
+      require('mini.ai').setup {
+        n_lines = 500,
+        mappings = { around_next = 'aN', inside_next = 'iN' },
+      }
 
       -- Add/delete/replace surroundings (brackets, quotes, etc.)
       --
@@ -662,8 +670,8 @@ require('lazy').setup({
 })
 
 vim.cmd.colorscheme 'catppuccin-nvim'
--- Better diff options
-vim.opt.diffopt = 'internal,filler,closeoff,hiddenoff,algorithm:patience'
+-- Better diff options, on top of the 0.12 default (inline:char, linematch:40, ...)
+vim.opt.diffopt:append { 'hiddenoff', 'algorithm:patience' }
 
 -- Conflict marker highlighting
 vim.cmd [[
