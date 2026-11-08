@@ -9,6 +9,13 @@ vim.o.foldcolumn = '1'
 vim.o.foldlevel = 99
 vim.o.foldlevelstart = 99
 vim.o.foldenable = true
+-- Native folding: LSP folding ranges when a server has them (set on LspAttach),
+-- else treesitter (set when a parser starts), else indent.
+vim.o.foldmethod = 'indent'
+-- A closed fold shows its first line, highlighted.
+vim.o.foldtext = ''
+-- Keep the 1-wide fold column free of nested level digits.
+vim.opt.fillchars:append { foldinner = ' ' }
 
 -- Set to true if you have a Nerd Font installed and selected in the terminal
 vim.g.have_nerd_font = true
@@ -610,7 +617,11 @@ require('lazy').setup({
           end
 
           -- Syntax highlighting is provided by Neovim once a parser is started.
-          -- Folding is handled by nvim-ufo in this config.
+          -- Fold with treesitter (an LSP with folding ranges takes over on attach).
+          for _, win in ipairs(vim.fn.win_findbuf(args.buf)) do
+            vim.wo[win][0].foldmethod = 'expr'
+            vim.wo[win][0].foldexpr = 'v:lua.vim.treesitter.foldexpr()'
+          end
 
           -- Indentation (provided by nvim-treesitter)
           vim.bo[args.buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"

@@ -101,6 +101,8 @@ it with `verify/expected/`. Don't format them; `.styluaignore` keeps
 non-literal argument, so don't change it to a literal.
 In `src/App.vue`, `label` is a string literal on purpose: the Vue-plugin check
 hovers it and expects `"Clicked"`, a type that doesn't need `vue` installed.
+`src/folds.ts` opens with two import lines: the folding check expects them
+closed after open, so keep at least two imports at the top.
 `data/vercel.json` and `data/compose.yaml` each carry a top-level key their
 SchemaStore schema forbids (`notARealOption`), for the schema-diagnostic checks.
 Keep their file names: SchemaStore picks the schema by name.
