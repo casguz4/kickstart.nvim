@@ -35,6 +35,9 @@ isn't installed. The skip message names the binary to install with
 `:MasonInstall`. Servers whose config builds `cmd` in a function name no binary
 up front, so they can't be skipped this way.
 
+The `diagnostics:` tests need the network: jsonls and yamlls download the
+schema they validate against. Offline they fail, not skip.
+
 ## Layout
 
 | Path                 | What it is                                                           |
@@ -61,33 +64,39 @@ end)
 Name tests `<area>: <behavior>` so the filter argument can pick an area.
 Assert behavior, never how a plugin spec or module is laid out.
 
-| Helper                                          | Use it for                                                                                                                                |
-| ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| `h.test(name, fn)`                              | Register a test.                                                                                                                          |
-| `h.ok(cond, msg)` / `h.eq(a, b, what)`          | Assert. A failure reports the spec file and line.                                                                                         |
-| `h.skip(reason)`                                | End a test as skipped.                                                                                                                    |
-| `h.startup_errors()`                            | Error lines in `:messages` + ERROR notifications, captured right after boot.                                                              |
-| `h.checkhealth_errors(section)`                 | `ERROR` lines from `:checkhealth <section>`.                                                                                              |
-| `h.checkhealth_problems(section)`               | `WARNING`/`ERROR` items from `:checkhealth <section>`, each `{ level, text, detail }` (`detail`: the indented lines, e.g. a stack trace). |
-| `h.plugin(name)`                                | The lazy.nvim registry entry for a plugin (loaded or not), or `nil`.                                                                      |
-| `h.open(rel)`                                   | Edit a fixture file; returns the buffer.                                                                                                  |
-| `h.servers(buf)`                                | Sorted names of the clients attached to a buffer.                                                                                         |
-| `h.expect_servers(rel, { includes, excludes })` | Open a fixture file, wait for `includes` to attach, fail on missing or `excludes`. Skips when an `includes` binary isn't installed.       |
-| `h.position_of(buf, text)`                      | The LSP position (0-based) of the first occurrence of `text` in `buf`, so specs don't hardcode line/column.                               |
-| `h.hover_until(buf, server, pos, done)`         | Hover from one attached server, re-asked one request at a time until `done(text)` holds; returns `ok, text`. Use it for every hover.      |
-| `h.map(mode, lhs, buf?)`                        | `maparg()` details for whatever answers `lhs` (buffer-local maps count when `buf` is given), or `nil`.                                    |
-| `h.opt(name, buf?)`                             | An option's global value, or its value in `buf` (window options read from its window).                                                    |
+| Helper                                          | Use it for                                                                                                                                                |
+| ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `h.test(name, fn)`                              | Register a test.                                                                                                                                          |
+| `h.ok(cond, msg)` / `h.eq(a, b, what)`          | Assert. A failure reports the spec file and line.                                                                                                         |
+| `h.skip(reason)`                                | End a test as skipped.                                                                                                                                    |
+| `h.startup_errors()`                            | Error lines in `:messages` + ERROR notifications, captured right after boot.                                                                              |
+| `h.checkhealth_errors(section)`                 | `ERROR` lines from `:checkhealth <section>`.                                                                                                              |
+| `h.checkhealth_problems(section)`               | `WARNING`/`ERROR` items from `:checkhealth <section>`, each `{ level, text, detail }` (`detail`: the indented lines, e.g. a stack trace).                 |
+| `h.plugin(name)`                                | The lazy.nvim registry entry for a plugin (loaded or not), or `nil`.                                                                                      |
+| `h.open(rel)`                                   | Edit a fixture file (or an absolute path); returns the buffer.                                                                                            |
+| `h.copy_fixture(rel)`                           | Copy a fixture file into a temp dir with no `.dir` in its path; returns the copy's path. yamlls applies no schema under a dot-directory.                  |
+| `h.servers(buf)`                                | Sorted names of the clients attached to a buffer.                                                                                                         |
+| `h.expect_servers(rel, { includes, excludes })` | Open a fixture file (or an absolute path), wait for `includes` to attach, fail on missing or `excludes`. Skips when an `includes` binary isn't installed. |
+| `h.position_of(buf, text)`                      | The LSP position (0-based) of the first occurrence of `text` in `buf`, so specs don't hardcode line/column.                                               |
+| `h.hover_until(buf, server, pos, done)`         | Hover from one attached server, re-asked one request at a time until `done(text)` holds; returns `ok, text`. Use it for every hover.                      |
+| `h.map(mode, lhs, buf?)`                        | `maparg()` details for whatever answers `lhs` (buffer-local maps count when `buf` is given), or `nil`.                                                    |
+| `h.opt(name, buf?)`                             | An option's global value, or its value in `buf` (window options read from its window).                                                                    |
 
 ## Fixture
 
 `fixture/` has `src/index.ts` (with `eslint.config.js`), `src/App.vue`,
-`src/styles.css`, `data/settings.json`, `data/settings.yaml`, `notes.md` and
-`lua/sample.lua`, plus `src/messy.ts`. That file is intentionally unformatted,
-with an unused import and a fixable ESLint issue, for the fix-on-save checks.
-Don't format it. In `src/index.ts`, `greet(visitor)` passes a variable on purpose:
-the hints check needs a non-literal argument, so don't change it to a literal.
+`src/styles.css` (with `.stylelintrc.json`, which has no rules: `stylelint_lsp`
+attaches only where a Stylelint config exists), `data/settings.json`,
+`data/settings.yaml`, `notes.md` and `lua/sample.lua`, plus `src/messy.ts`.
+That file is intentionally unformatted, with an unused import and a fixable
+ESLint issue, for the fix-on-save checks. Don't format it. In `src/index.ts`,
+`greet(visitor)` passes a variable on purpose: the hints check needs a
+non-literal argument, so don't change it to a literal.
 In `src/App.vue`, `label` is a string literal on purpose: the Vue-plugin check
 hovers it and expects `"Clicked"`, a type that doesn't need `vue` installed.
+`data/vercel.json` and `data/compose.yaml` each carry a top-level key their
+SchemaStore schema forbids (`notARealOption`), for the schema-diagnostic checks.
+Keep their file names: SchemaStore picks the schema by name.
 
 ESLint needs its packages to lint (`npm install` inside `fixture/`, and
 `node_modules` is gitignored). The `eslint` server attaches without them.

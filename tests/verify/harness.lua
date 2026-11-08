@@ -150,12 +150,32 @@ local ATTACH_TIMEOUT_MS = 20000
 -- shouldn't.
 local SETTLE_MS = 1500
 
+-- A fixture path relative to tests/fixture, or an absolute path as is.
+local function fixture_path(rel)
+  return rel:sub(1, 1) == '/' and rel or h.fixture .. '/' .. rel
+end
+
 ---Edit a fixture file in the current window.
----@param rel string path relative to tests/fixture, e.g. 'src/index.ts'
+---@param rel string path relative to tests/fixture, e.g. 'src/index.ts', or an absolute path
 ---@return integer bufnr
 function h.open(rel)
-  vim.cmd.edit(vim.fn.fnameescape(h.fixture .. '/' .. rel))
+  vim.cmd.edit(vim.fn.fnameescape(fixture_path(rel)))
   return vim.api.nvim_get_current_buf()
+end
+
+---Copy a fixture file, keeping its name, into a fresh temp dir with no
+---dot-directory in its path, and return the copy's absolute path. For servers
+---that never match a file under one (yamlls's schema globs skip any path with a
+---`.dir` in it, and this checkout usually lives in `~/.config`).
+---@param rel string path relative to tests/fixture
+---@return string path
+function h.copy_fixture(rel)
+  local dir = vim.fn.tempname()
+  vim.fn.mkdir(dir, 'p')
+  local path = dir .. '/' .. vim.fs.basename(rel)
+  vim.fn.writefile(vim.fn.readfile(fixture_path(rel), 'b'), path, 'b')
+  assert(not path:find '/%.', 'temp dir has a dot-directory in its path: ' .. path)
+  return path
 end
 
 ---Names of the language servers attached to a buffer, sorted.
@@ -189,7 +209,7 @@ end
 ---Open a fixture file and assert which language servers attach to it. Skips
 ---when an `includes` server's executable isn't installed (Mason's bin dir is
 ---on PATH), so a missing install doesn't read as a config failure.
----@param rel string path relative to tests/fixture
+---@param rel string path relative to tests/fixture, or an absolute path
 ---@param want { includes?: string[], excludes?: string[] }
 function h.expect_servers(rel, want)
   local includes, excludes = want.includes or {}, want.excludes or {}

@@ -5,6 +5,7 @@ local h = ...
 local present = {
   'CopilotChat.nvim',
   'LuaSnip',
+  'SchemaStore.nvim',
   'blink.cmp',
   'bufferline.nvim',
   'catppuccin',
@@ -28,7 +29,6 @@ local present = {
   'nvim-dap',
   'nvim-dap-go',
   'nvim-dap-ui',
-  'nvim-lint',
   'nvim-lspconfig',
   'nvim-nio',
   'nvim-treesitter',
@@ -42,7 +42,9 @@ local present = {
   'which-key.nvim',
 }
 
-local absent = {}
+local absent = {
+  'nvim-lint',
+}
 
 for _, name in ipairs(present) do
   h.test('plugins: ' .. name .. ' is installed', function()

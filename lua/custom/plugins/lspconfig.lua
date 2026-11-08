@@ -13,14 +13,16 @@ local MASON_ENSURED = {
   'json-lsp',
   'lua-language-server',
   'rust-analyzer',
+  'stylelint-language-server',
   'svelte-language-server',
   'tsc',
   'vtsls',
   'vue-language-server',
+  'yaml-language-server',
 
   -- Markdown
-  'markdownlint',
   'marksman',
+  'rumdl',
 
   -- Formatters
   'prettier',
@@ -29,12 +31,6 @@ local MASON_ENSURED = {
   -- Debuggers for frontend
   'js-debug-adapter',
   'chrome-debug-adapter',
-
-  -- Linters for frontend
-  'eslint_d',
-  'stylelint',
-  'jsonlint',
-  'yamllint',
 }
 
 local function MasonInstallAll()
@@ -107,6 +103,9 @@ return {
       },
       config = true,
     },
+
+    -- JSON/YAML schemas for jsonls and yamlls.
+    'b0o/SchemaStore.nvim',
 
     -- Useful status updates for LSP.
     { 'j-hui/fidget.nvim', opts = {} },
@@ -229,6 +228,44 @@ return {
       },
     })
 
+    -- Diagnostics come only from language servers (no nvim-lint). eslint and
+    -- stylelint_lsp attach only where the project has an ESLint/Stylelint config.
+    -- stylelint lints css/postcss by default; add scss and less.
+    vim.lsp.config('stylelint_lsp', {
+      settings = {
+        stylelint = { validate = { 'css', 'postcss', 'scss', 'less' } },
+      },
+    })
+
+    -- JSON/YAML: schemas from SchemaStore.nvim, matched by file name. yamlls's
+    -- own store is off so SchemaStore.nvim is the only source.
+    vim.lsp.config('jsonls', {
+      settings = {
+        json = {
+          schemas = require('schemastore').json.schemas(),
+          validate = { enable = true },
+        },
+      },
+    })
+
+    vim.lsp.config('yamlls', {
+      settings = {
+        yaml = {
+          schemaStore = { enable = false, url = '' },
+          schemas = require('schemastore').yaml.schemas(),
+        },
+      },
+    })
+
+    -- Markdown: rumdl lints; marksman owns links and symbols, so rumdl's are off.
+    vim.lsp.config('rumdl', {
+      init_options = {
+        enableLinkCompletions = false,
+        enableLinkNavigation = false,
+        enableSymbols = false,
+      },
+    })
+
     -- Enable servers
     vim.lsp.enable {
       'astro',
@@ -242,8 +279,12 @@ return {
       'html',
       'cssls',
       'jsonls',
+      'yamlls',
+      'rumdl',
+      'marksman',
       'emmet_ls',
       'eslint',
+      'stylelint_lsp',
       'vtsls',
       'vue_ls',
     }

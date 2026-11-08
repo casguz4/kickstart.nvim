@@ -7,8 +7,10 @@ local cases = {
   { file = 'lua/sample.lua', includes = { 'lua_ls' } },
   { file = 'src/index.ts', includes = { 'tsc', 'eslint' }, excludes = { 'ts_ls', 'tsgo', 'vtsls' } },
   { file = 'src/App.vue', includes = { 'vtsls', 'vue_ls' }, excludes = { 'tsc' } },
-  { file = 'src/styles.css', includes = { 'cssls' } },
+  { file = 'src/styles.css', includes = { 'cssls', 'stylelint_lsp' } },
   { file = 'data/settings.json', includes = { 'jsonls' } },
+  { file = 'data/settings.yaml', includes = { 'yamlls' } },
+  { file = 'notes.md', includes = { 'rumdl', 'marksman' } },
 }
 
 for _, case in ipairs(cases) do
