@@ -4,7 +4,6 @@ local h = ...
 -- here to `absent` as they remove plugins, and add the ones they introduce.
 local present = {
   'CopilotChat.nvim',
-  'LuaSnip',
   'SchemaStore.nvim',
   'blink.cmp',
   'bufferline.nvim',
@@ -43,6 +42,7 @@ local present = {
 }
 
 local absent = {
+  'LuaSnip',
   'nvim-lint',
 }
 

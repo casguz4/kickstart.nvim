@@ -111,7 +111,7 @@ return {
     -- Useful status updates for LSP.
     { 'j-hui/fidget.nvim', opts = {} },
 
-    -- Allows extra capabilities provided by blink.cmp
+    -- Loads first, so its completion capabilities are on '*' before servers start.
     'saghen/blink.cmp',
   },
 
@@ -163,20 +163,18 @@ return {
       end,
     })
 
-    -- Capabilities
-    local capabilities = vim.lsp.protocol.make_client_capabilities()
-    capabilities = vim.tbl_deep_extend('force', capabilities, require('blink.cmp').get_lsp_capabilities({}, false))
-    capabilities = vim.tbl_deep_extend('force', capabilities, {
-      textDocument = {
-        foldingRange = {
-          dynamicRegistration = false,
-          lineFoldingOnly = true,
+    -- Capabilities. blink.cmp registers its completion capabilities on '*'
+    -- itself; vim.lsp.config merges this folding capability (for nvim-ufo) in.
+    vim.lsp.config('*', {
+      capabilities = {
+        textDocument = {
+          foldingRange = {
+            dynamicRegistration = false,
+            lineFoldingOnly = true,
+          },
         },
       },
     })
-
-    -- Default settings for all LSP configs loaded from runtimepath (including nvim-lspconfig's `lsp/*.lua`).
-    vim.lsp.config('*', { capabilities = capabilities })
 
     -- Formatting belongs to Prettier (through conform) and stylua, so no other
     -- server may format: conform's `lsp_format = 'prefer'` would pick it over
