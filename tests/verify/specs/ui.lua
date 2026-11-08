@@ -48,6 +48,7 @@ h.test('ui: statusline shows LSP progress while it runs', function()
   lsp_progress(token, { kind = 'end', message = 'done' })
   local done = statusline()
   h.eq(running_count(running), before + 1, 'running progress count in the statusline: ' .. running)
+  h.ok(running:find '%d+%%%(%d+%) %S', 'no space between the progress status and the file info: ' .. running)
   h.eq(running_count(done), before, 'progress count after it ended: ' .. done)
 end)
 

@@ -532,6 +532,7 @@ require('lazy').setup({
       local section_fileinfo = statusline.section_fileinfo
       ---@diagnostic disable-next-line: duplicate-set-field
       statusline.section_fileinfo = function(args)
+        -- Non-empty, the status ends in a space ("40%(2) "), which separates it.
         return vim.ui.progress_status() .. section_fileinfo(args)
       end
 
