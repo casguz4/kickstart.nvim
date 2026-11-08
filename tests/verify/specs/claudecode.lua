@@ -17,9 +17,7 @@ local keys = {
 for _, case in ipairs(keys) do
   local mode, lhs, desc = case.mode, case.lhs, case.desc
   h.test('claudecode: ' .. mode .. ' ' .. lhs .. ' resolves to "' .. desc .. '"', function()
-    local m = h.map(mode, lhs)
-    h.ok(m, lhs .. ' is not mapped in mode ' .. mode)
-    h.eq(m.desc, desc, lhs .. ' desc')
+    h.expect_map(mode, lhs, desc)
   end)
 end
 
@@ -32,10 +30,6 @@ end
 
 for _, mode in ipairs { 'n', 'x' } do
   h.test('claudecode: which-key shows <leader>a as a group in mode ' .. mode, function()
-    local wk_mode = require('which-key.buf').get { mode = mode }
-    h.ok(wk_mode, 'which-key has no ' .. mode .. ' mode for the current buffer')
-    local node = wk_mode.tree:find '<leader>a'
-    h.ok(node and node.mapping and node.mapping.group, '<leader>a is not a which-key group in mode ' .. mode)
-    h.ok(node.mapping.desc and node.mapping.desc ~= '', '<leader>a group has no label')
+    h.eq(h.key_group('<leader>a', mode), '[A]I (Claude Code)', '<leader>a group in mode ' .. mode)
   end)
 end

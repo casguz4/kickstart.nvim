@@ -393,6 +393,24 @@ function h.map(mode, lhs, buf)
   return not vim.tbl_isempty(m) and m or nil
 end
 
+---Assert that `lhs` is mapped in `mode` with description `desc`, and return
+---the mapping (as `h.map` gives it) for any further checks.
+---@param mode string e.g. 'n'
+---@param lhs string e.g. '<leader>e'
+---@param desc string
+---@param buf? integer resolve from this buffer, so buffer-local maps count
+---@return table
+function h.expect_map(mode, lhs, desc, buf)
+  local m = h.map(mode, lhs, buf)
+  if not m then
+    error(string.format('%s is not mapped in mode %s', lhs, mode), 2)
+  end
+  if m.desc ~= desc then
+    error(string.format('%s desc: expected %s, got %s', lhs, vim.inspect(desc), vim.inspect(m.desc)), 2)
+  end
+  return m
+end
+
 ---The label which-key shows for the key group at `lhs` (e.g. '[S]earch'), or
 ---nil when `lhs` is not a group. Read from which-key's key tree for the current
 ---buffer, then from the groups declared to which-key: a group with no keys

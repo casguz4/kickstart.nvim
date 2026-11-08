@@ -2,7 +2,7 @@ local h = ...
 
 -- nvim-dap loads on its keys. Load it the way a key press would, so its
 -- adapters, configurations and real maps are in place.
-local function dap()
+local function load_dap()
   require('lazy').load { plugins = { 'nvim-dap' } }
   return require 'dap'
 end
@@ -19,7 +19,7 @@ end
 -- configuring nvim-dap would replace this config (lazy.nvim runs one `config`)
 -- or add its own adapters, and either changes these lists.
 h.test('debug: loaded, dap has only the JS and Go adapters and configurations', function()
-  local d = dap()
+  local d = load_dap()
   local adapters, filetypes = vim.tbl_keys(d.adapters), vim.tbl_keys(d.configurations)
   table.sort(adapters)
   table.sort(filetypes)
@@ -40,7 +40,7 @@ h.test('debug: Launch file debugs a .js file through js-debug, with dap-ui open 
   if not mason_bin 'js-debug-adapter' then
     h.skip 'js-debug-adapter is not installed (:MasonInstall js-debug-adapter)'
   end
-  local d = dap()
+  local d = load_dap()
   local dir = vim.fn.tempname()
   vim.fn.mkdir(dir, 'p')
   local path = dir .. '/main.js'
@@ -71,7 +71,7 @@ h.test('debug: pwa-chrome starts the Mason js-debug-adapter server, as pwa-node 
   if not mason_bin 'js-debug-adapter' then
     h.skip 'js-debug-adapter is not installed (:MasonInstall js-debug-adapter)'
   end
-  local adapters = dap().adapters
+  local adapters = load_dap().adapters
   local chrome, node = adapters['pwa-chrome'], adapters['pwa-node']
   h.ok(type(chrome) == 'table' and chrome.executable, 'pwa-chrome starts no executable: ' .. vim.inspect(chrome))
   h.eq(chrome.type, 'server', 'pwa-chrome adapter type')
@@ -83,7 +83,7 @@ h.test('debug: Go debugs through nvim-dap-go with Mason delve', function()
   if not mason_bin 'dlv' then
     h.skip 'dlv is not installed (:MasonInstall delve)'
   end
-  local d = dap()
+  local d = load_dap()
   h.ok(d.adapters.go, 'go adapter is missing')
   h.ok(d.configurations.go and #d.configurations.go > 0, 'no go configurations')
 end)
@@ -96,7 +96,7 @@ local js_configs = {
 
 for _, ft in ipairs { 'javascript', 'typescript', 'javascriptreact', 'typescriptreact' } do
   h.test('debug: ' .. ft .. ' has the three JS configurations', function()
-    local configs = dap().configurations[ft]
+    local configs = load_dap().configurations[ft]
     h.ok(configs, 'no configurations for ' .. ft)
     local got = vim.tbl_map(function(c)
       return { type = c.type, request = c.request, name = c.name }
@@ -120,9 +120,7 @@ local keys = {
 for _, case in ipairs(keys) do
   local lhs, desc = case.lhs, case.desc
   h.test('debug: ' .. lhs .. ' resolves to "' .. desc .. '"', function()
-    local m = h.map('n', lhs)
-    h.ok(m, lhs .. ' is not mapped')
-    h.eq(m.desc, desc, lhs .. ' desc')
+    h.expect_map('n', lhs, desc)
   end)
 end
 
@@ -132,7 +130,7 @@ h.test('debug: <leader>db toggles a breakpoint on the cursor line', function()
   local path = vim.fn.tempname() .. '.txt'
   vim.fn.writefile({ 'one', 'two' }, path)
   local buf = h.open(path)
-  dap()
+  load_dap()
   local breakpoints = require 'dap.breakpoints'
   breakpoints.clear()
   local function count()
@@ -146,7 +144,7 @@ end)
 
 for _, lhs in ipairs { '<leader>b', '<leader>B' } do
   h.test('debug: ' .. lhs .. ' is no longer a direct map', function()
-    dap()
+    load_dap()
     local m = h.map('n', lhs)
     h.ok(not m, lhs .. ' is still mapped: ' .. tostring(m and (m.desc or m.rhs)))
   end)

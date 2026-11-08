@@ -7,9 +7,7 @@ local function lsp_buf()
 end
 
 h.test('keymaps: <leader>q opens the diagnostic loclist', function()
-  local m = h.map('n', '<leader>q')
-  h.ok(m, '<leader>q is not mapped')
-  h.eq(m.desc, 'Open diagnostic [Q]uickfix list', '<leader>q desc')
+  h.expect_map('n', '<leader>q', 'Open diagnostic [Q]uickfix list')
 end)
 
 h.test('keymaps: gd jumps to definition in an LSP buffer', function()
@@ -26,10 +24,8 @@ local diagnostic_defaults = {
 for _, case in ipairs(diagnostic_defaults) do
   local lhs, desc = case.lhs, case.desc
   h.test('keymaps: ' .. lhs .. ' is the 0.12 default in an LSP buffer', function()
-    local m = h.map('n', lhs, lsp_buf())
-    h.ok(m, lhs .. ' is not mapped')
+    local m = h.expect_map('n', lhs, desc, lsp_buf())
     h.ok(m.buffer == 0, lhs .. ' is overridden by a buffer-local map: ' .. tostring(m.desc))
-    h.eq(m.desc, desc, lhs .. ' desc')
   end)
 end
 
@@ -52,16 +48,12 @@ local lsp_defaults = {
 for _, case in ipairs(lsp_defaults) do
   local mode, lhs, desc = case.mode, case.lhs, case.desc
   h.test(('keymaps: %s %s is the 0.12 LSP default'):format(mode, lhs), function()
-    local m = h.map(mode, lhs, lsp_buf())
-    h.ok(m, lhs .. ' is not mapped')
-    h.eq(m.desc, desc, lhs .. ' desc')
+    h.expect_map(mode, lhs, desc, lsp_buf())
   end)
 end
 
 h.test('keymaps: K is the 0.12 LSP hover, not a custom map', function()
-  local m = h.map('n', 'K', lsp_buf())
-  h.ok(m, 'K is not mapped in the LSP buffer')
-  h.eq(m.desc, 'vim.lsp.buf.hover()', 'K desc')
+  h.expect_map('n', 'K', 'vim.lsp.buf.hover()', lsp_buf())
 end)
 
 -- Old custom maps whose keys now fall back to core Vim (gr, gI) or to nothing.
@@ -90,9 +82,8 @@ local kept = {
 for _, case in ipairs(kept) do
   local lhs, desc = case.lhs, case.desc
   h.test('keymaps: ' .. lhs .. ' stays mapped in an LSP buffer', function()
-    local m = h.map('n', lhs, lsp_buf())
-    h.ok(m and m.buffer == 1, lhs .. ' is not a buffer-local map: ' .. vim.inspect(m))
-    h.eq(m.desc, desc, lhs .. ' desc')
+    local m = h.expect_map('n', lhs, desc, lsp_buf())
+    h.ok(m.buffer == 1, lhs .. ' is not a buffer-local map: ' .. vim.inspect(m))
   end)
 end
 

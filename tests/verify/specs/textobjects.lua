@@ -12,9 +12,7 @@ local mini_next = {
 for _, case in ipairs(mini_next) do
   local mode, lhs, desc = case.mode, case.lhs, case.desc
   h.test(('textobjects: %s %s is mini.ai "next"'):format(mode, lhs), function()
-    local m = h.map(mode, lhs)
-    h.ok(m, lhs .. ' is not mapped in ' .. mode)
-    h.eq(m.desc, desc, lhs .. ' desc')
+    h.expect_map(mode, lhs, desc)
   end)
 end
 
@@ -31,8 +29,6 @@ local native_selection = {
 for _, case in ipairs(native_selection) do
   local mode, lhs, desc = case.mode, case.lhs, case.desc
   h.test(('textobjects: %s %s is the 0.12 incremental selection'):format(mode, lhs), function()
-    local m = h.map(mode, lhs)
-    h.ok(m, lhs .. ' is not mapped in ' .. mode)
-    h.eq(m.desc, desc, lhs .. ' desc')
+    h.expect_map(mode, lhs, desc)
   end)
 end
