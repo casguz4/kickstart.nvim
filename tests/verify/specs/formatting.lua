@@ -1,5 +1,11 @@
 local h = ...
 
+h.test('formatting: its plugins are installed', function()
+  h.expect_plugins {
+    installed = { 'conform.nvim' },
+  }
+end)
+
 -- Formatting is Prettier's (through conform) and stylua's, so none of these
 -- servers may offer to format: conform's `lsp_format = 'prefer'` would pick
 -- them over Prettier. `supports_method` also sees capabilities a server

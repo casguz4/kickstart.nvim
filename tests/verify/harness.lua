@@ -1,8 +1,8 @@
 -- Helpers for verification specs. Each spec file receives this table as `...`:
 --
 --   local h = ...
---   h.test('plugins: nvim-ufo is gone', function()
---     h.ok(not h.plugin 'nvim-ufo', 'nvim-ufo is still in the lazy registry')
+--   h.test('folding: the plugins it replaced are removed', function()
+--     h.expect_plugins { removed = { 'nvim-ufo', 'promise-async' } }
 --   end)
 --
 -- Assertions raise errors; the runner reports the test as failed with that
@@ -141,6 +141,27 @@ end
 ---@return table?
 function h.plugin(name)
   return require('lazy.core.config').plugins[name]
+end
+
+---Assert every `installed` plugin is in the lazy.nvim registry and no `removed`
+---one is. Each area's spec lists the plugins it brought in and the ones it
+---replaced, so tickets in different areas don't edit one shared list.
+---@param want { installed?: string[], removed?: string[] }
+function h.expect_plugins(want)
+  local problems = {}
+  for _, name in ipairs(want.installed or {}) do
+    if not h.plugin(name) then
+      table.insert(problems, name .. ' is not in the lazy.nvim registry')
+    end
+  end
+  for _, name in ipairs(want.removed or {}) do
+    if h.plugin(name) then
+      table.insert(problems, name .. ' is still in the lazy.nvim registry')
+    end
+  end
+  if #problems > 0 then
+    error(table.concat(problems, '\n'), 2)
+  end
 end
 
 -- [[ Buffers & language servers ]]

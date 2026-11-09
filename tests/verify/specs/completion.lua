@@ -1,5 +1,12 @@
 local h = ...
 
+h.test('completion: its plugins are installed and the ones it replaced are removed', function()
+  h.expect_plugins {
+    installed = { 'blink.cmp', 'friendly-snippets' },
+    removed = { 'LuaSnip' },
+  }
+end)
+
 local STEP_TIMEOUT_MS = 5000
 local TICK_MS = 20
 

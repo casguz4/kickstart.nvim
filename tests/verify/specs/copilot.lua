@@ -1,5 +1,11 @@
 local h = ...
 
+h.test('copilot: the plugins it replaced are removed', function()
+  h.expect_plugins {
+    removed = { 'copilot.vim' },
+  }
+end)
+
 -- Copilot is off every session: no client, no server process, until
 -- <leader>tc. These tests start the server only to see it attach and detach;
 -- they never enter Insert mode, so no suggestion is ever requested.

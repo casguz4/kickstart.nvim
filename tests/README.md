@@ -28,8 +28,9 @@ A full run (no pattern) fails when it takes longer than its time budget
 (`BUDGET_S` in `verify/run.lua`; `VERIFY_BUDGET_S=<seconds>` overrides), so a
 slowdown fails the commit that caused it. Check the slowest tests before
 raising the budget. The time is counted from Nvim's start, so a first-run
-`npm ci` doesn't count against it. On macOS the script re-runs itself under `caffeinate -i`, so the
-Mac can't idle-sleep mid-run and push the run into the timeout.
+`npm ci` doesn't count against it. On macOS the script re-runs itself under
+`caffeinate -i`, so the Mac can't idle-sleep mid-run and push the run into the
+timeout.
 
 It works from any checkout (including a `cw` worktree): the script points
 `XDG_CONFIG_HOME` at a temp dir whose `nvim` entry links to the checkout (every
@@ -81,7 +82,9 @@ end)
 
 Each spec file is one area: every test in `specs/<area>.lua` is named
 `<area>: <behavior>`, so `verify.sh <area>:` runs exactly that file. The runner
-fails a test named for another area. The reviewer's rules for tests are in
+fails a test named for another area. A ticket that adds or removes a plugin
+lists it in its area's `h.expect_plugins` test; `specs/plugins.lua` keeps only
+the plugins no area owns. The reviewer's rules for tests are in
 [`../CODING_STANDARDS.md`](../CODING_STANDARDS.md#tests).
 
 | Helper                                          | Use it for                                                                                                                                                |
@@ -93,6 +96,7 @@ fails a test named for another area. The reviewer's rules for tests are in
 | `h.checkhealth_errors(section)`                 | `ERROR` lines from `:checkhealth <section>`.                                                                                                              |
 | `h.checkhealth_problems(section)`               | `WARNING`/`ERROR` items from `:checkhealth <section>`, each `{ level, text, detail }` (`detail`: the indented lines, e.g. a stack trace).                 |
 | `h.plugin(name)`                                | The lazy.nvim registry entry for a plugin (loaded or not), or `nil`.                                                                                      |
+| `h.expect_plugins { installed, removed }`       | Assert each `installed` plugin is in the lazy.nvim registry and no `removed` one is. Every problem is reported in one failure.                            |
 | `h.open(rel)`                                   | Edit a fixture file (or an absolute path); returns the buffer.                                                                                            |
 | `h.copy_fixture(rel)`                           | Copy a fixture file into a temp dir with no `.dir` in its path; returns the copy's path. yamlls applies no schema under a dot-directory.                  |
 | `h.sibling_copy(rel)`                           | Copy a fixture file next to itself as `<name>.saved.<ext>`, so saving it runs in the fixture project; returns its path. Deleted after the test.          |

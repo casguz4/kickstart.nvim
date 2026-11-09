@@ -1,5 +1,12 @@
 local h = ...
 
+h.test('ui: its plugins are installed and the ones it replaced are removed', function()
+  h.expect_plugins {
+    installed = { 'bufferline.nvim', 'catppuccin', 'dashboard-nvim', 'indent-blankline.nvim', 'neo-tree.nvim', 'nui.nvim', 'nvim-web-devicons' },
+    removed = { 'fidget.nvim' },
+  }
+end)
+
 -- Fire an LspProgress event the way the LSP client does when a server sends
 -- `$/progress`. `client_id` is never looked up by the bridge, so no server is
 -- needed.

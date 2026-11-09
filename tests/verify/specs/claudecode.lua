@@ -1,5 +1,12 @@
 local h = ...
 
+h.test('claudecode: its plugins are installed and the ones it replaced are removed', function()
+  h.expect_plugins {
+    installed = { 'claudecode.nvim' },
+    removed = { 'CopilotChat.nvim' },
+  }
+end)
+
 -- The keys only resolve; nothing here presses them, so no Claude Code
 -- terminal (or its MCP server) starts during the run.
 local keys = {

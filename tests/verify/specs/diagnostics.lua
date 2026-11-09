@@ -1,5 +1,12 @@
 local h = ...
 
+h.test('diagnostics: its plugins are installed and the ones it replaced are removed', function()
+  h.expect_plugins {
+    installed = { 'SchemaStore.nvim' },
+    removed = { 'nvim-lint' },
+  }
+end)
+
 -- Diagnostics come only from language servers. SchemaStore.nvim gives jsonls
 -- and yamlls a schema for each file by name; both fixtures below are matched by
 -- name and carry a top-level key their schema forbids. The servers download

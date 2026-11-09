@@ -10,7 +10,7 @@ harness), so they aren't repeated here.
 - **One source of truth.** A policy that two places apply (the foldexpr choice, a filetype exclusion list) lives once and both places call it.
 - **Lazy-load stubs match the keys.** A spec's `cmd` lists `:Commands` that its keys or the spec itself run, nothing speculative.
 - **Match the surrounding style.** Key notation as init.lua writes it (`<CR>`, `<leader>`), `desc` in the `[X]` mnemonic style where which-key shows it, comments that say why, not what.
-- **Removing a plugin removes its traces.** Its spec, its lock entry, comments that name it, and any option or capability that only existed for it.
+- **Removing a plugin removes its traces.** Its spec, its lock entry, comments that name it, and any option or capability that only existed for it. Its area's `h.expect_plugins` test lists it as `removed`.
 
 ## Tests
 

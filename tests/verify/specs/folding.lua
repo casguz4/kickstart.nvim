@@ -1,5 +1,11 @@
 local h = ...
 
+h.test('folding: the plugins it replaced are removed', function()
+  h.expect_plugins {
+    removed = { 'nvim-ufo', 'promise-async' },
+  }
+end)
+
 -- Long enough for a server to answer its first foldingRange request.
 local FOLD_TIMEOUT_MS = 20000
 

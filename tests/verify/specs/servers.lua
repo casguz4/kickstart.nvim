@@ -1,5 +1,11 @@
 local h = ...
 
+h.test('servers: its plugins are installed', function()
+  h.expect_plugins {
+    installed = { 'lazydev.nvim', 'mason-tool-installer.nvim', 'mason.nvim', 'nvim-lspconfig' },
+  }
+end)
+
 -- Servers each fixture file gets. Baseline: only servers that attach on the
 -- 0.11 config and stay attached after the migration. Migration tickets add the
 -- servers they route in (`includes`) and the ones they route out (`excludes`).

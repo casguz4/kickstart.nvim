@@ -1,5 +1,12 @@
 local h = ...
 
+h.test('debug: its plugins are installed and the ones it replaced are removed', function()
+  h.expect_plugins {
+    installed = { 'nvim-dap', 'nvim-dap-go', 'nvim-dap-ui', 'nvim-nio' },
+    removed = { 'mason-nvim-dap.nvim' },
+  }
+end)
+
 -- nvim-dap loads on its keys. Load it the way a key press would, so its
 -- adapters, configurations and real maps are in place.
 local function load_dap()
