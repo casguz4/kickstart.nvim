@@ -33,14 +33,30 @@ local function run()
 
   local specs = vim.fn.globpath(h.repo .. '/tests/verify/specs', '*.lua', false, true)
   table.sort(specs)
+  -- A spec file is one area: every test in specs/<area>.lua is named
+  -- `<area>: ...`, so `verify.sh <area>:` runs exactly that file.
+  local misnamed = {}
   for _, file in ipairs(specs) do
     local chunk = assert(loadfile(file))
+    local before = #h._tests()
     chunk(h)
+    local area = vim.fn.fnamemodify(file, ':t:r')
+    for i = before + 1, #h._tests() do
+      local name = h._tests()[i].name
+      if name:sub(1, #area + 2) ~= area .. ': ' then
+        table.insert(misnamed, string.format("specs/%s.lua: '%s' must start with '%s: '", area, name, area))
+      end
+    end
   end
 
   local filter = vim.env.VERIFY_FILTER or ''
   local counts = { pass = 0, fail = 0, skip = 0 }
   local failures = {}
+  for _, msg in ipairs(misnamed) do
+    counts.fail = counts.fail + 1
+    table.insert(failures, { name = 'harness: test names match their spec file', msg = msg })
+    out '  FAIL  harness: test names match their spec file'
+  end
 
   for _, t in ipairs(h._tests()) do
     if filter == '' or t.name:find(filter, 1, true) then

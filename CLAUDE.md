@@ -12,3 +12,6 @@ Default vocabulary: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-
 
 Single-context: one `CONTEXT.md` + `docs/adr/` at the repo root. See `docs/agents/domain.md`.
 
+## Checks
+
+`tests/check.sh` runs stylua and the headless harness (`tests/README.md` explains the harness). Review rules live in `CODING_STANDARDS.md`.

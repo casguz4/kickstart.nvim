@@ -72,8 +72,10 @@ h.test('servers: .ts attaches tsc + eslint', function()
 end)
 ```
 
-Name tests `<area>: <behavior>` so the filter argument can pick an area.
-Assert behavior, never how a plugin spec or module is laid out.
+Each spec file is one area: every test in `specs/<area>.lua` is named
+`<area>: <behavior>`, so `verify.sh <area>:` runs exactly that file. The runner
+fails a test named for another area. The reviewer's rules for tests are in
+[`../CODING_STANDARDS.md`](../CODING_STANDARDS.md#tests).
 
 | Helper                                          | Use it for                                                                                                                                                |
 | ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
