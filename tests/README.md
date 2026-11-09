@@ -8,12 +8,15 @@ attach, what keys are mapped, and what options are set.
 ## Running it
 
 ```sh
-tests/verify.sh              # everything
-tests/verify.sh servers:     # only tests whose name contains "servers:"
+tests/check.sh               # stylua, then every test: the one check command
+tests/check.sh servers:      # stylua, then only tests whose name contains "servers:"
+tests/check.sh --lint-only   # stylua only
+tests/verify.sh [pattern]    # the harness alone
 ```
 
-The pre-commit hook in `.githooks/` runs it (plus `stylua --check --respect-ignores`) whenever a
-commit touches the config or `tests/`. Enable it once per clone with
+`check.sh` finds Mason's stylua, which is on PATH only inside Nvim. The
+pre-commit hook in `.githooks/` runs it whenever a commit touches the config or
+`tests/` (stylua alone for other Lua). Enable it once per clone with
 `git config core.hooksPath .githooks`.
 
 It prints `ok` / `FAIL` / `skip` per test, then the failure messages. The exit
@@ -48,6 +51,7 @@ schema they validate against. Offline they fail, not skip.
 
 | Path                 | What it is                                                           |
 | -------------------- | -------------------------------------------------------------------- |
+| `check.sh`           | The one check command: stylua, then `verify.sh`.                     |
 | `verify.sh`          | The harness. Sets up a signed-out config home and runs Nvim.         |
 | `verify/prelude.lua` | Runs before the config (`--cmd`). Records ERROR-level notifications. |
 | `verify/run.lua`     | Boots, loads every spec, runs it, reports, exits.                    |

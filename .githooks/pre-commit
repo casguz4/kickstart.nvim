@@ -1,35 +1,20 @@
 #!/usr/bin/env bash
-# Pre-commit guardrail: stylua on staged Lua files, then the headless harness
-# (tests/verify.sh) when the config or its tests change.
+# Pre-commit guardrail: tests/check.sh (stylua, then the headless harness when
+# the config or its tests change; stylua alone when only other Lua changes).
 #
 # Enable once per clone:  git config core.hooksPath .githooks
 # Skip for one commit:    git commit --no-verify
 set -euo pipefail
 
 REPO="$(git rev-parse --show-toplevel)"
-# stylua comes from Mason, which is only on PATH inside Nvim.
-STYLUA="$(command -v stylua || echo "${MASON:-$HOME/.local/share/nvim/mason}/bin/stylua")"
+staged="$(git diff --cached --name-only --diff-filter=ACMR)"
 
-lua_files=()
-while IFS= read -r f; do
-  lua_files+=("$REPO/$f")
-done < <(git diff --cached --name-only --diff-filter=ACMR -- '*.lua')
-
-if [ "${#lua_files[@]}" -gt 0 ]; then
-  if [ ! -x "$STYLUA" ]; then
-    echo "pre-commit: stylua not found; install it with :MasonInstall stylua" >&2
+if printf '%s\n' "$staged" | rg -q '^(init\.lua|lua/|lsp/|tests/|lazy-lock\.json)'; then
+  echo "pre-commit: running tests/check.sh"
+  if ! "$REPO/tests/check.sh"; then
+    echo "pre-commit: checks failed; fix them or commit with --no-verify" >&2
     exit 1
   fi
-  if ! "$STYLUA" --check --respect-ignores "${lua_files[@]}"; then
-    echo "pre-commit: stylua found unformatted files (above); run stylua on them" >&2
-    exit 1
-  fi
-fi
-
-if git diff --cached --name-only | rg -q '^(init\.lua|lua/|lsp/|tests/|lazy-lock\.json)'; then
-  echo "pre-commit: running tests/verify.sh"
-  if ! "$REPO/tests/verify.sh"; then
-    echo "pre-commit: harness failed; fix it or commit with --no-verify" >&2
-    exit 1
-  fi
+elif printf '%s\n' "$staged" | rg -q '\.lua$'; then
+  "$REPO/tests/check.sh" --lint-only
 fi
