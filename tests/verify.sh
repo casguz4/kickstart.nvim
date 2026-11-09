@@ -34,6 +34,16 @@ for entry in "$REAL_XDG"/* "$REAL_XDG"/.[!.]*; do
 done
 ln -s "$REPO" "$XDG_TMP/nvim"
 
+# ESLint and the Astro server need the fixture's packages. A fresh clone or
+# worktree has none, so install them from the committed lockfile.
+if [ ! -d "$REPO/tests/fixture/node_modules" ]; then
+  echo "verify: installing tests/fixture packages (npm ci)"
+  if ! (cd "$REPO/tests/fixture" && npm ci --silent --no-audit --no-fund); then
+    echo "verify: npm ci failed in tests/fixture (offline?); the eslint and astro checks need it" >&2
+    exit 3
+  fi
+fi
+
 export VERIFY_REPO="$REPO"
 export VERIFY_FILTER="${1:-}"
 

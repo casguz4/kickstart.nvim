@@ -126,5 +126,8 @@ moving that check to another such file.
 SchemaStore schema forbids (`notARealOption`), for the schema-diagnostic checks.
 Keep their file names: SchemaStore picks the schema by name.
 
-ESLint needs its packages to lint (`npm install` inside `fixture/`, and
-`node_modules` is gitignored). The `eslint` server attaches without them.
+ESLint and the Astro server need the fixture's packages. `node_modules` is
+gitignored; `verify.sh` runs `npm ci` from the committed `package-lock.json`
+when it's missing (a fresh clone or worktree), and stops if that fails. To
+change a package, edit `package.json`, run `npm install` in `fixture/`, and
+commit both files.
