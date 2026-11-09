@@ -19,10 +19,17 @@ pre-commit hook in `.githooks/` runs it whenever a commit touches the config or
 `tests/` (stylua alone for other Lua). Enable it once per clone with
 `git config core.hooksPath .githooks`.
 
-It prints `ok` / `FAIL` / `skip` per test, then the failure messages. The exit
-code is `0` when nothing failed, `1` when a test failed, `2` on timeout and `3`
-when the harness itself crashed. Nvim's stderr is printed only when the run
-fails.
+It prints `ok` / `FAIL` / `skip` per test, then the failure messages, the 3
+slowest tests and the run's total time. The exit code is `0` when nothing
+failed, `1` when a test failed, `2` on timeout and `3` when the harness itself
+crashed. Nvim's stderr is printed only when the run fails.
+
+A full run (no pattern) fails when it takes longer than its time budget
+(`BUDGET_S` in `verify/run.lua`; `VERIFY_BUDGET_S=<seconds>` overrides), so a
+slowdown fails the commit that caused it. Check the slowest tests before
+raising the budget. The time is counted from Nvim's start, so a first-run
+`npm ci` doesn't count against it. On macOS the script re-runs itself under `caffeinate -i`, so the
+Mac can't idle-sleep mid-run and push the run into the timeout.
 
 It works from any checkout (including a `cw` worktree): the script points
 `XDG_CONFIG_HOME` at a temp dir whose `nvim` entry links to the checkout (every

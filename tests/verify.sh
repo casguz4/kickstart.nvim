@@ -8,6 +8,12 @@ set -euo pipefail
 
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
+# A Mac that idle-sleeps mid-run stalls it into the timeout, so on macOS the
+# script re-runs itself under `caffeinate -i`, which blocks idle sleep until it exits.
+if [ "$(uname)" = Darwin ] && [ -z "${VERIFY_CAFFEINATED:-}" ] && command -v caffeinate >/dev/null; then
+  VERIFY_CAFFEINATED=1 exec caffeinate -i "$0" "$@"
+fi
+
 # The run is signed out of everything: credential env vars are dropped here,
 # and the config dirs that hold logins are left out of the config home below.
 # The `startup:` checks fail if any of them reach Nvim.

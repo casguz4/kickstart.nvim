@@ -7,11 +7,39 @@ local function out(line)
   io.stdout:write(line .. '\n')
 end
 
+-- A full run (no filter) fails past this many seconds, so a slowdown is caught
+-- when it lands instead of when a run hits TIMEOUT_MS. VERIFY_BUDGET_S overrides.
+local BUDGET_S = tonumber(vim.env.VERIFY_BUDGET_S) or 60
+local SLOWEST = 3
+
+-- Set by prelude.lua before the config loads, so the run's time includes boot.
+local run_start = _G.__verify_start or vim.uv.hrtime()
+
+local function seconds_since(start_ns)
+  return (vim.uv.hrtime() - start_ns) / 1e9
+end
+
+-- Each finished test's { name, seconds }, for the slowest-tests report.
+local timings = {}
+
+local function report_slowest()
+  table.sort(timings, function(a, b)
+    return a.seconds > b.seconds
+  end)
+  if #timings > 0 then
+    out '\nSlowest:'
+    for i = 1, math.min(SLOWEST, #timings) do
+      out(string.format('  %5.1fs  %s', timings[i].seconds, timings[i].name))
+    end
+  end
+end
+
 -- Ends a run stuck waiting (a server that never answers). Fires only while the
 -- event loop turns, e.g. inside vim.wait; a hard synchronous block still hangs.
 local TIMEOUT_MS = 180000
 vim.defer_fn(function()
   out(string.format('TIMEOUT: harness did not finish within %ds', TIMEOUT_MS / 1000))
+  report_slowest()
   vim.cmd 'cquit 2'
 end, TIMEOUT_MS)
 
@@ -52,16 +80,23 @@ local function run()
   local filter = vim.env.VERIFY_FILTER or ''
   local counts = { pass = 0, fail = 0, skip = 0 }
   local failures = {}
-  for _, msg in ipairs(misnamed) do
+  -- A check on the run itself rather than on the config.
+  local function harness_fail(name, msg)
     counts.fail = counts.fail + 1
-    table.insert(failures, { name = 'harness: test names match their spec file', msg = msg })
-    out '  FAIL  harness: test names match their spec file'
+    table.insert(failures, { name = 'harness: ' .. name, msg = msg })
+    out('  FAIL  harness: ' .. name)
+  end
+
+  for _, msg in ipairs(misnamed) do
+    harness_fail('test names match their spec file', msg)
   end
 
   for _, t in ipairs(h._tests()) do
     if filter == '' or t.name:find(filter, 1, true) then
+      local started = vim.uv.hrtime()
       local ok, err = pcall(t.fn)
       h._cleanup()
+      table.insert(timings, { name = t.name, seconds = seconds_since(started) })
       if ok then
         counts.pass = counts.pass + 1
         out('  ok    ' .. t.name)
@@ -77,13 +112,23 @@ local function run()
     end
   end
 
+  local elapsed = seconds_since(run_start)
+  if filter == '' and elapsed > BUDGET_S then
+    harness_fail(
+      'a full run finishes within the time budget',
+      string.format('took %.1fs, budget is %ds (VERIFY_BUDGET_S); the slowest tests are listed below', elapsed, BUDGET_S)
+    )
+  end
+
   if #failures > 0 then
     out '\nFailures:'
     for _, f in ipairs(failures) do
       out('\n  ' .. f.name .. '\n    ' .. f.msg:gsub('\n', '\n    '))
     end
   end
-  out(string.format('\n%d passed, %d failed, %d skipped', counts.pass, counts.fail, counts.skip))
+
+  report_slowest()
+  out(string.format('\n%d passed, %d failed, %d skipped in %.1fs', counts.pass, counts.fail, counts.skip, elapsed))
 
   if counts.pass + counts.fail + counts.skip == 0 then
     out(string.format("No tests matched '%s'", filter))
