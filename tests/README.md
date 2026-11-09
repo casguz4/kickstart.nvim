@@ -30,6 +30,12 @@ installs a missing plugin during the run it updates the checkout's
 `lazy-lock.json`, the same as a normal start would. The run starts inside
 `tests/fixture`, the same way you'd start Nvim in a project root.
 
+The run is signed out of everything. `verify.sh` unsets every env var whose
+name contains `TOKEN`, `SECRET` or `API_KEY` or starts with `GITHUB_`, `GH_` or
+`COPILOT_`, and leaves the login dirs (`github-copilot`, `gh`) out of the temp
+config home. The `startup:` checks fail if either leaks through. A test that
+needs one of those dirs or variables has to provide its own throwaway copy.
+
 A server-attach test is **skipped**, not failed, when that server's executable
 isn't installed. The skip message names the binary to install with
 `:MasonInstall`. Servers whose config builds `cmd` in a function name no binary
@@ -42,7 +48,7 @@ schema they validate against. Offline they fail, not skip.
 
 | Path                 | What it is                                                           |
 | -------------------- | -------------------------------------------------------------------- |
-| `verify.sh`          | The one command. Sets up the config home and runs Nvim.              |
+| `verify.sh`          | The harness. Sets up a signed-out config home and runs Nvim.         |
 | `verify/prelude.lua` | Runs before the config (`--cmd`). Records ERROR-level notifications. |
 | `verify/run.lua`     | Boots, loads every spec, runs it, reports, exits.                    |
 | `verify/harness.lua` | The helpers specs use (below).                                       |

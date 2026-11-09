@@ -11,21 +11,15 @@ local START_MS = 20000
 -- has already run. This only gives a stray start a few loop turns to show.
 local SIBLING_MS = 250
 
--- The server these tests start is never signed in: it runs with an empty home
--- and config dirs and without the shell's GitHub/Copilot tokens, so it finds no
--- login and has nothing to send text to GitHub with.
+-- The server these tests start is never signed in: tests/verify.sh already
+-- drops the shell's tokens (the `startup:` checks hold it to that), and here it
+-- also gets an empty home and config dirs, so it finds no login anywhere.
 local function signed_out_cmd()
   local home = vim.fn.tempname()
   for _, sub in ipairs { '.config', '.local/share', '.local/state', '.cache' } do
     vim.fn.mkdir(home .. '/' .. sub, 'p')
   end
   local cmd = { 'env' }
-  for name in pairs(vim.fn.environ()) do
-    local upper = name:upper()
-    if upper:find('TOKEN', 1, true) or upper:find('GITHUB', 1, true) or upper:find('COPILOT', 1, true) or upper:find '^GH_' then
-      vim.list_extend(cmd, { '-u', name })
-    end
-  end
   vim.list_extend(cmd, {
     'HOME=' .. home,
     'XDG_CONFIG_HOME=' .. home .. '/.config',

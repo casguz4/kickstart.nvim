@@ -8,17 +8,29 @@ set -euo pipefail
 
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
+# The run is signed out of everything: credential env vars are dropped here,
+# and the config dirs that hold logins are left out of the config home below.
+# The `startup:` checks fail if any of them reach Nvim.
+CREDENTIAL_DIRS=" github-copilot gh "
+for name in $(compgen -e); do
+  case "$(printf '%s' "$name" | tr '[:lower:]' '[:upper:]')" in
+    *TOKEN* | *SECRET* | *API_KEY* | GITHUB_* | GH_* | COPILOT_*) unset "$name" ;;
+  esac
+done
+
 # Boot the config from this checkout (it may be a worktree, not ~/.config/nvim):
 # point XDG_CONFIG_HOME at a temp dir whose `nvim` entry links here. Every other
-# entry links to the real config home, so the servers and tools Nvim spawns
-# (Copilot's login, git, ...) still find their own config.
+# entry, except the credential dirs, links to the real config home, so the
+# servers and tools Nvim spawns (git, ...) still find their own config.
 REAL_XDG="${XDG_CONFIG_HOME:-$HOME/.config}"
 XDG_TMP="$(mktemp -d)"
 trap 'rm -rf "$XDG_TMP"' EXIT
 for entry in "$REAL_XDG"/* "$REAL_XDG"/.[!.]*; do
   [ -e "$entry" ] || continue
-  [ "$(basename "$entry")" = nvim ] && continue
-  ln -s "$entry" "$XDG_TMP/$(basename "$entry")"
+  base="$(basename "$entry")"
+  [ "$base" = nvim ] && continue
+  case "$CREDENTIAL_DIRS" in *" $base "*) continue ;; esac
+  ln -s "$entry" "$XDG_TMP/$base"
 done
 ln -s "$REPO" "$XDG_TMP/nvim"
 

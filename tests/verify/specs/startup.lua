@@ -43,3 +43,31 @@ for _, section in ipairs { 'vim.lsp', 'vim.deprecated' } do
     h.ok(#errs == 0, table.concat(errs, '\n'))
   end)
 end
+
+-- tests/verify.sh signs the run out of everything, so no server it starts
+-- (Copilot, gh-backed tools) can log in or send text anywhere.
+h.test('startup: no credential env vars reach Nvim', function()
+  local leaked = {}
+  for name in pairs(vim.fn.environ()) do
+    local upper = name:upper()
+    if
+      upper:find('TOKEN', 1, true)
+      or upper:find('SECRET', 1, true)
+      or upper:find('API_KEY', 1, true)
+      or upper:find '^GITHUB_'
+      or upper:find '^GH_'
+      or upper:find '^COPILOT_'
+    then
+      table.insert(leaked, name)
+    end
+  end
+  table.sort(leaked)
+  h.eq(leaked, {}, 'credential env vars visible to Nvim')
+end)
+
+h.test('startup: the config home has no login dirs', function()
+  for _, dir in ipairs { 'github-copilot', 'gh' } do
+    local path = vim.env.XDG_CONFIG_HOME .. '/' .. dir
+    h.ok(vim.uv.fs_lstat(path) == nil, path .. ' is linked into the test config home')
+  end
+end)
